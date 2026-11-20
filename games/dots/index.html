@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>จุดต่อกล่อง · Selva World</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <style>
+    #board { width: 100%; max-width: 560px; display: block; margin: 0 auto; touch-action: manipulation; }
+    #board .edge { stroke: #ffffff1c; stroke-width: 6; stroke-linecap: round; }
+    #board .edge.drawn { stroke-width: 8; }
+    #board .edge.last { filter: drop-shadow(0 0 6px #fff); }
+    #board .hit { stroke: transparent; stroke-width: 26; stroke-linecap: round; }
+    #board.myturn .hit.free { cursor: pointer; }
+    #board.myturn .hit.free:hover + .ghost { stroke: var(--me); opacity: .55; }
+    #board .ghost { stroke: transparent; stroke-width: 8; stroke-linecap: round; pointer-events: none; }
+    #board .dotpt { fill: var(--text); pointer-events: none; }
+    #board .box { opacity: .35; }
+    #board .box-label { font: 700 20px Kanit, sans-serif; fill: #fff; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <header class="topbar"><a class="back" href="../../">← หน้าหลัก</a><h1>🔲 จุดต่อกล่อง</h1></header>
+  <main>
+    <section id="lobby"></section>
+    <section id="game" hidden>
+      <div class="game-layout">
+        <div class="card"><svg id="board"></svg></div>
+        <aside class="side">
+          <div class="banner" id="banner"></div>
+          <h3>คะแนน (กล่อง)</h3>
+          <ul class="players" id="list"></ul>
+          <button id="again" class="btn primary" hidden>เล่นอีกครั้ง</button>
+          <p class="muted">ผลัดกันลากเส้นระหว่างจุด ใครปิดกล่องได้ครบ 4 ด้านได้แต้ม และได้เล่นต่ออีกตา</p>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="game.js"></script>
+</body>
+</html>

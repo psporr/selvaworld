@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>งูสี่ทิศ · Selva World</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <style>
+    .stage { position: relative; width: 100%; max-width: 620px; margin: 0 auto; }
+    #board { width: 100%; aspect-ratio: 1; display: block; border-radius: var(--radius); background: #0c0a17; border: 1px solid var(--line); touch-action: none; }
+    #count { position: absolute; inset: 0; display: grid; place-items: center; font-size: 6rem; font-weight: 800; pointer-events: none; text-shadow: 0 4px 20px #000; }
+    .pad { display: grid; grid-template-columns: repeat(3, 64px); grid-template-rows: repeat(2, 56px); gap: 8px; justify-content: center; margin: 14px auto 0; }
+    .pad button { font-size: 1.4rem; padding: 0; }
+    .pad .up { grid-column: 2; }
+    .pad .left { grid-column: 1; grid-row: 2; }
+    .pad .down { grid-column: 2; grid-row: 2; }
+    .pad .right { grid-column: 3; grid-row: 2; }
+    @media (hover: hover) and (pointer: fine) { .pad { display: none; } }
+  </style>
+</head>
+<body>
+  <header class="topbar"><a class="back" href="../../">← หน้าหลัก</a><h1>🐍 งูสี่ทิศ</h1></header>
+  <main>
+    <section id="lobby"></section>
+    <section id="game" hidden>
+      <div class="game-layout">
+        <div>
+          <div class="stage">
+            <canvas id="board"></canvas>
+            <div id="count"></div>
+          </div>
+          <div class="pad">
+            <button class="btn up" data-d="up">▲</button>
+            <button class="btn left" data-d="left">◀</button>
+            <button class="btn down" data-d="down">▼</button>
+            <button class="btn right" data-d="right">▶</button>
+          </div>
+        </div>
+        <aside class="side">
+          <div class="banner" id="banner"></div>
+          <h3>ผู้เล่น (ความยาว · ชนะ)</h3>
+          <ul class="players" id="list"></ul>
+          <button id="again" class="btn primary" hidden>เริ่มรอบใหม่</button>
+          <p class="muted">บังคับด้วยปุ่มลูกศร / WASD หรือปัดจอ</p>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="game.js"></script>
+</body>
+</html>
