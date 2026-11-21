@@ -14,7 +14,10 @@ A portal of online web games for playing with up to 6 players (bots can fill sea
 
 | Game | Players | Type |
 |---|---|---|
-| 🐍 Snake Arena (`games/snake`) | 1–6 | Real-time: grow longer, the last snake alive wins |
+| ⚔️ Tactics Arena (`games/tactics`) | 1–6 | SRPG: knight / archer / mage squads on a grid, forest cover, counterattacks, deterministic damage with a forecast panel |
+| 💎 Gem Rush (`games/gems`) | 1–6 | Puzzle: 90-second match-3 race, everyone starts from the same seeded board, cascades multiply points |
+| 🎲 Dice Master (`games/dice`) | 1–6 | Tabletop: Yacht-style dice, 3 rolls per turn with holds, 12 categories, upper-section bonus |
+| 🐍 Snake Arena (`games/snake`) | 1–6 | Real-time: grow longer, the last snake alive wins (or the longest one after 90 s) |
 | ⚡ Fast Finger (`games/reaction`) | 1–6 | Reaction: 5 rounds, tap when the screen turns green |
 | 🔲 Dots and Boxes (`games/dots`) | 1–6 | Turn-based: close a box to score a point |
 | 🃏 Pok Deng (`games/pokdeng`) | 1–6 | Cards: dealer rotates each round, Pok 8/9, 2–3 deng, tong, straight, sian |
@@ -24,8 +27,8 @@ A portal of online web games for playing with up to 6 players (bots can fill sea
 Card games use `js/cards.js` + `css/cards.css`. Each player's hidden cards are sent privately
 with `room.sendTo(id, data)`, so other players' browsers never receive cards they can't see.
 
-Every game supports 1–6 players. Pok Deng, Slave, Poker and Dots and Boxes need at least 2 seats:
-the host can press **🤖 Add bot** in the lobby (bots run on the host's browser via `js/bots.js`).
+Every game supports 1–6 players and can be played solo against bots: the host presses **🤖 Add bot** in the lobby (bots run on the host's browser via `js/bots.js`).
+Game rules live in each game's `rules.js` (pure functions shared by host, players and bots).
 To give a new game bots, pass `bots: true` to `createLobby` and drive them with `botRunner(room, decide, handle)`.
 
 ## Publishing to GitHub Pages

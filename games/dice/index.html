@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ยอดลูกเต๋า · Selva World</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <style>
+    .tray { background: radial-gradient(ellipse at center, #3b2a63 0%, #241b40 100%); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 12px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .dice { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .die {
+      width: 58px; height: 58px; border-radius: 12px; background: #fdfcf7; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+      padding: 7px; gap: 2px; box-shadow: 0 4px 0 #c9c3b0, 0 6px 12px #0006; cursor: pointer; position: relative; transition: transform .15s;
+    }
+    .die i { border-radius: 50%; }
+    .die i.on { background: #1d1b26; }
+    .die.held { transform: translateY(-8px); box-shadow: 0 0 0 3px var(--accent2), 0 10px 16px #0008; }
+    .die.held::after { content: 'เก็บ'; position: absolute; bottom: -24px; left: 0; right: 0; text-align: center; font-size: .75rem; color: var(--accent2); }
+    .die.blank { opacity: .25; cursor: default; }
+    .die.roll { animation: roll .45s; }
+    @keyframes roll { 30% { transform: rotate(-25deg) scale(.9); } 70% { transform: rotate(20deg) scale(1.05); } }
+    .tray .status { font-size: 1.1rem; font-weight: 600; text-align: center; min-height: 1.5em; }
+    .card-wrap { overflow-x: auto; margin-top: 14px; border: 1px solid var(--line); border-radius: var(--radius); }
+    table.card { border-collapse: collapse; width: 100%; min-width: 360px; font-size: .95rem; }
+    .card th, .card td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: center; white-space: nowrap; }
+    .card th:first-child, .card td:first-child { text-align: left; position: sticky; left: 0; background: var(--card); }
+    .card thead th { background: var(--bg2); border-bottom: 3px solid var(--pc); }
+    .card thead th.turn { background: color-mix(in srgb, var(--pc) 30%, var(--bg2)); }
+    .card td small { display: block; color: var(--muted); font-size: .72rem; }
+    .card td.pick { color: var(--accent2); cursor: pointer; font-weight: 700; background: #22d3ee14; }
+    .card td.pick.zero { color: var(--muted); font-weight: 400; }
+    .card td.pick.chosen { background: var(--accent2); color: #111; }
+    .card tr.sum td { font-weight: 800; background: var(--bg2); }
+    .card td.filled { font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header class="topbar"><a class="back" href="../../">← หน้าหลัก</a><h1>🎲 ยอดลูกเต๋า</h1></header>
+  <main>
+    <section id="lobby"></section>
+    <section id="game" hidden><div id="table"></div></section>
+  </main>
+  <script type="module" src="game.js"></script>
+</body>
+</html>

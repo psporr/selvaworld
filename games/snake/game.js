@@ -5,6 +5,7 @@ const W = 32;
 const H = 32;
 const TICK = 115;
 const FOOD = 4;
+const ROUND_MS = 90000; // with 2+ snakes, the longest survivor wins when time runs out
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const OPPOSITE = { up: 'down', down: 'up', left: 'right', right: 'left' };
 const STARTS = [
@@ -16,7 +17,7 @@ const STARTS = [
   { x: W / 2 - 1, y: H - 4, d: 'up' },
 ];
 
-createLobby({ title: '🐍 งูสี่ทิศ', minPlayers: 1, maxPlayers: 6, onStart });
+createLobby({ title: '🐍 งูสี่ทิศ', minPlayers: 1, maxPlayers: 6, bots: true, onStart });
 
 function onStart(room) {
   const canvas = document.getElementById('board');
@@ -29,7 +30,13 @@ function onStart(room) {
   let wins = {};
 
   room.on('message', (m) => {
-    if (m.type === 'state') { state = m; draw(); renderList(); }
+    if (m.type === 'state') {
+      state = m;
+      window.__st = m;
+      if (m.left != null) banner.textContent = `⏱ ${m.left} วินาที`;
+      draw();
+      renderList();
+    }
     else if (m.type === 'countdown') {
       countEl.textContent = m.n > 0 ? m.n : '';
       if (m.n > 0) { banner.textContent = 'เตรียมตัว!'; again.hidden = true; }
@@ -127,6 +134,7 @@ function hostLogic(room, again) {
   let tickTimer = 0;
   let cdTimer = 0;
   let running = false;
+  let roundStart = 0;
   const key = (x, y) => `${x},${y}`;
 
   function newRound() {
@@ -137,7 +145,7 @@ function hostLogic(room, again) {
       const s = STARTS[i % STARTS.length];
       const [dx, dy] = DIRS[s.d];
       return {
-        id: p.id, name: p.name, color: p.color, dir: s.d, queue: [], alive: true, grow: 0,
+        id: p.id, name: p.name, color: p.color, bot: !!p.bot, dir: s.d, queue: [], alive: true, grow: 0,
         body: [0, 1, 2].map((k) => [s.x - dx * k, s.y - dy * k]),
       };
     });
@@ -152,6 +160,7 @@ function hostLogic(room, again) {
       if (n <= 0) {
         clearInterval(cdTimer);
         running = true;
+        roundStart = Date.now();
         tickTimer = setInterval(tick, TICK);
       }
     }, 800);
@@ -168,8 +177,41 @@ function hostLogic(room, again) {
     }
   }
 
+  // bot steering: never step into a wall/body, prefer room to move (flood fill), then the nearest fruit
+  function steer(s, alive) {
+    const blocked = new Set();
+    for (const o of alive) o.body.forEach(([x, y], i) => { if (i < o.body.length - 1) blocked.add(key(x, y)); });
+    for (const o of alive) if (o !== s) for (const [dx, dy] of Object.values(DIRS)) blocked.add(key(o.body[0][0] + dx, o.body[0][1] + dy));
+    const free = (x, y) => x >= 0 && y >= 0 && x < W && y < H && !blocked.has(key(x, y));
+    const space = (sx, sy) => {
+      const seen = new Set([key(sx, sy)]);
+      const q = [[sx, sy]];
+      while (q.length && seen.size < 80) {
+        const [x, y] = q.pop();
+        for (const [dx, dy] of Object.values(DIRS)) {
+          const k = key(x + dx, y + dy);
+          if (!seen.has(k) && free(x + dx, y + dy)) { seen.add(k); q.push([x + dx, y + dy]); }
+        }
+      }
+      return seen.size;
+    };
+    let best = null;
+    for (const [d, [dx, dy]] of Object.entries(DIRS)) {
+      if (d === OPPOSITE[s.dir]) continue;
+      const x = s.body[0][0] + dx;
+      const y = s.body[0][1] + dy;
+      if (!free(x, y)) continue;
+      const open = space(x, y);
+      const fruit = Math.min(...food.map(([fx, fy]) => Math.abs(fx - x) + Math.abs(fy - y)));
+      const score = Math.min(open, s.body.length + 12) * 10 - fruit + (d === s.dir ? 0.5 : 0) + Math.random() * 0.4;
+      if (!best || score > best.score) best = { score, d };
+    }
+    if (best) s.queue = [best.d];
+  }
+
   function tick() {
     const alive = snakes.filter((s) => s.alive);
+    for (const s of alive) if (s.bot) steer(s, alive);
     const occupied = new Set();
     for (const s of alive) {
       const len = s.grow > 0 ? s.body.length : s.body.length - 1; // tail moves away this tick
@@ -204,10 +246,16 @@ function hostLogic(room, again) {
     if (!running) return;
     const alive = snakes.filter((s) => s.alive);
     const multi = snakes.length > 1;
-    if ((multi && alive.length > 1) || (!multi && alive.length > 0)) return;
+    const timeUp = multi && Date.now() - roundStart >= ROUND_MS;
+    if (!timeUp && ((multi && alive.length > 1) || (!multi && alive.length > 0))) return;
     running = false;
     clearInterval(tickTimer);
-    const winner = multi && alive[0] ? alive[0].id : null;
+    let winner = multi && alive.length === 1 ? alive[0].id : null;
+    if (timeUp && alive.length > 1) {
+      const longest = Math.max(...alive.map((x) => x.body.length));
+      const top = alive.filter((x) => x.body.length === longest);
+      winner = top.length === 1 ? top[0].id : null;
+    }
     if (winner) wins[winner] = (wins[winner] || 0) + 1;
     room.broadcast({ type: 'over', winner, wins: { ...wins }, solo: multi ? 0 : snakes[0].body.length });
   }
@@ -216,6 +264,7 @@ function hostLogic(room, again) {
     room.broadcast({
       type: 'state',
       food,
+      left: running && snakes.length > 1 ? Math.max(0, Math.ceil((ROUND_MS - (Date.now() - roundStart)) / 1000)) : null,
       snakes: snakes.map(({ id, name, color, alive, body }) => ({ id, name, color, alive, body })),
     });
   }

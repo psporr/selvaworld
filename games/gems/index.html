@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>เพชรเรียงสาม · Selva World</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <style>
+    .stage { position: relative; width: 100%; max-width: 520px; margin: 0 auto; }
+    #board {
+      display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; padding: 8px; aspect-ratio: 1;
+      background: #0c0a17; border: 1px solid var(--line); border-radius: var(--radius); touch-action: none; user-select: none; -webkit-user-select: none;
+    }
+    .gem {
+      border-radius: 22%; display: grid; place-items: center; font-size: clamp(18px, 5.6vw, 34px); cursor: pointer;
+      background: var(--g); box-shadow: inset 0 -4px 0 #0004, inset 0 3px 0 #fff3; transition: transform .14s, opacity .2s;
+    }
+    .gem.sel { transform: scale(1.1); box-shadow: 0 0 0 3px #fff, inset 0 -4px 0 #0004; }
+    .gem.pop { transform: scale(.2) rotate(40deg); opacity: 0; }
+    .gem.hint { animation: hint 1s infinite; }
+    .gem.shake { animation: shake .3s; }
+    @keyframes hint { 50% { transform: scale(1.12); box-shadow: 0 0 0 3px #fde047; } }
+    @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+    .cover { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; background: #0009; border-radius: var(--radius); font-size: 1.4rem; font-weight: 700; padding: 16px; }
+    .cover .n { font-size: 5rem; font-weight: 800; }
+    .combo { position: absolute; left: 0; right: 0; top: 40%; text-align: center; font-size: 2.2rem; font-weight: 800; color: #fde047; text-shadow: 0 3px 12px #000; pointer-events: none; opacity: 0; transition: opacity .2s; }
+    .combo.show { opacity: 1; }
+    .timer { font-size: 2.4rem; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; }
+    .timer.low { color: var(--bad); }
+    .myscore { text-align: center; color: var(--muted); }
+    .myscore b { color: var(--text); font-size: 1.6rem; display: block; }
+  </style>
+</head>
+<body>
+  <header class="topbar"><a class="back" href="../../">← หน้าหลัก</a><h1>💎 เพชรเรียงสาม</h1></header>
+  <main>
+    <section id="lobby"></section>
+    <section id="game" hidden>
+      <div class="game-layout">
+        <div class="stage">
+          <div id="board"></div>
+          <div class="combo" id="combo"></div>
+          <div class="cover" id="cover">รอเริ่ม...</div>
+        </div>
+        <aside class="side">
+          <div class="timer" id="timer">90</div>
+          <div class="muted" style="text-align:center;margin-top:-10px">วินาทีที่เหลือ</div>
+          <div class="myscore">คะแนนของคุณ<b id="myscore">0</b></div>
+          <h3>อันดับ</h3>
+          <ul class="players" id="list"></ul>
+          <button id="again" class="btn primary" hidden>เล่นอีกครั้ง</button>
+          <p class="muted">สลับเพชรที่อยู่ติดกันให้เรียง 3 ตัวขึ้นไป แตะทีละสองเม็ดหรือปัดก็ได้ เรียงต่อเนื่องได้คอมโบคูณคะแนน ทุกคนเริ่มจากกระดานเดียวกัน</p>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="game.js"></script>
+</body>
+</html>

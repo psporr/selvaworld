@@ -11,7 +11,7 @@
 <body>
   <header class="hero">
     <h1 class="logo">Selva World</h1>
-    <p>เกมออนไลน์สั้นๆ เล่นกับเพื่อนได้สูงสุด 6 คน (หรือเล่นกับบอท) ไม่ต้องสมัคร ไม่ต้องลงแอป</p>
+    <p>เกมออนไลน์สั้นๆ เล่นกับเพื่อนได้สูงสุด 6 คน หรือเล่นคนเดียวกับบอทก็ได้ ไม่ต้องสมัคร ไม่ต้องลงแอป</p>
     <ol class="steps">
       <li><b>1.</b> เลือกเกม</li>
       <li><b>2.</b> สร้างห้อง</li>
@@ -21,37 +21,52 @@
   </header>
 
   <main class="wrap">
-    <div class="games" id="games"></div>
+    <div id="games"></div>
   </main>
 
   <p class="footer">เชื่อมต่อแบบ peer-to-peer (WebRTC) เบราว์เซอร์ของคนสร้างห้องจะทำหน้าที่เป็นเซิร์ฟเวอร์</p>
 
   <script>
     // เพิ่มเกมใหม่: เพิ่ม object ในลิสต์นี้ และสร้างโฟลเดอร์ games/<id>/
-    const GAMES = [
-      { id: 'pokdeng',  name: 'ป็อกเด้ง',      icon: '🃏', bg: 'linear-gradient(135deg,#7f1d1d,#be123c)',
-        desc: 'ผลัดกันเป็นเจ้ามือ ป็อก 8 ป็อก 9 สองเด้ง สามเด้ง ตอง เรียง เซียน ครบ', players: '1–6 คน · มีบอท', tags: ['ไพ่', 'ปาร์ตี้'] },
-      { id: 'slave',    name: 'สลาฟ',          icon: '👑', bg: 'linear-gradient(135deg,#713f12,#ca8a04)',
-        desc: 'ลงไพ่ให้หมดก่อนเป็นคิง คนสุดท้ายเป็นสลาฟ ต้องแลกไพ่ดีให้คิงรอบหน้า', players: '1–6 คน · มีบอท', tags: ['ไพ่', 'กติกาไทย'] },
-      { id: 'poker',    name: 'โป๊กเกอร์',      icon: '♠️', bg: 'linear-gradient(135deg,#064e3b,#047857)',
-        desc: 'Texas Hold\'em เริ่มคนละ 1000 ชิป บลายด์ 10/20 เล่นจนเหลือผู้ชนะคนเดียว', players: '1–6 คน · มีบอท', tags: ['ไพ่', 'วางแผน'] },
-      { id: 'snake',    name: 'งูสี่ทิศ',      icon: '🐍', bg: 'linear-gradient(135deg,#14532d,#0f766e)',
-        desc: 'เก็บผลไม้ให้ตัวยาว หลบงูของเพื่อน คนสุดท้ายที่รอดชนะ', players: '1–6 คน', tags: ['เรียลไทม์', 'แอ็กชัน'] },
-      { id: 'reaction', name: 'นิ้วไว',         icon: '⚡', bg: 'linear-gradient(135deg,#7c2d12,#b45309)',
-        desc: 'จอเปลี่ยนเป็นสีเขียวเมื่อไหร่ แตะให้ไวที่สุด แตะก่อนโดนหักคะแนน', players: '1–6 คน', tags: ['ปาร์ตี้', '5 รอบ'] },
-      { id: 'dots',     name: 'จุดต่อกล่อง',   icon: '🔲', bg: 'linear-gradient(135deg,#312e81,#6d28d9)',
-        desc: 'ผลัดกันลากเส้น ปิดกล่องได้ก็ได้แต้มและได้เล่นต่อ', players: '1–6 คน · มีบอท', tags: ['ผลัดกันเล่น', 'วางแผน'] },
+    // เพิ่มเกมใหม่: เพิ่ม object ในลิสต์นี้ และสร้างโฟลเดอร์ games/<id>/
+    const SECTIONS = [
+      { title: '🎮 สายเกมเมอร์', games: [
+        { id: 'tactics',  name: 'สนามยุทธ์',     icon: '⚔️', bg: 'linear-gradient(135deg,#1e1b4b,#7c2d12)',
+          desc: 'SRPG บนตาราง คุมอัศวิน นักธนู จอมเวท เดินยึดป่า ตีโต้กลับ ทีมสุดท้ายที่รอดชนะ', tags: ['SRPG', 'วางแผน'] },
+        { id: 'gems',     name: 'เพชรเรียงสาม',  icon: '💎', bg: 'linear-gradient(135deg,#1e3a8a,#9d174d)',
+          desc: 'แข่งเรียงเพชร 90 วินาที ทุกคนเริ่มกระดานเดียวกัน ต่อคอมโบให้คะแนนพุ่ง', tags: ['ปริศนา', 'แข่งเวลา'] },
+        { id: 'dice',     name: 'ยอดลูกเต๋า',    icon: '🎲', bg: 'linear-gradient(135deg,#4c1d95,#0e7490)',
+          desc: 'บอร์ดเกมลูกเต๋า ทอยได้ 3 ครั้ง เลือกเก็บลูก ลงช่องคะแนนให้คุ้ม 12 รอบจบ', tags: ['บอร์ดเกม', 'ดวง+วางแผน'] },
+      ] },
+      { title: '🃏 ไพ่ไทย', games: [
+        { id: 'pokdeng',  name: 'ป็อกเด้ง',      icon: '🃏', bg: 'linear-gradient(135deg,#7f1d1d,#be123c)',
+          desc: 'ผลัดกันเป็นเจ้ามือ ป็อก 8 ป็อก 9 สองเด้ง สามเด้ง ตอง เรียง เซียน ครบ', tags: ['ไพ่', 'ปาร์ตี้'] },
+        { id: 'slave',    name: 'สลาฟ',          icon: '👑', bg: 'linear-gradient(135deg,#713f12,#ca8a04)',
+          desc: 'ลงไพ่ให้หมดก่อนเป็นคิง คนสุดท้ายเป็นสลาฟ ต้องแลกไพ่ดีให้คิงรอบหน้า', tags: ['ไพ่', 'กติกาไทย'] },
+        { id: 'poker',    name: 'โป๊กเกอร์',      icon: '♠️', bg: 'linear-gradient(135deg,#064e3b,#047857)',
+          desc: 'Texas Hold\'em เริ่มคนละ 1000 ชิป บลายด์ 10/20 เล่นจนเหลือผู้ชนะคนเดียว', tags: ['ไพ่', 'วางแผน'] },
+      ] },
+      { title: '🎉 ปาร์ตี้', games: [
+        { id: 'snake',    name: 'งูสี่ทิศ',      icon: '🐍', bg: 'linear-gradient(135deg,#14532d,#0f766e)',
+          desc: 'เก็บผลไม้ให้ตัวยาว หลบงูของเพื่อน คนสุดท้ายที่รอดชนะ', tags: ['เรียลไทม์', 'แอ็กชัน'] },
+        { id: 'reaction', name: 'นิ้วไว',         icon: '⚡', bg: 'linear-gradient(135deg,#7c2d12,#b45309)',
+          desc: 'จอเปลี่ยนเป็นสีเขียวเมื่อไหร่ แตะให้ไวที่สุด แตะก่อนโดนหักคะแนน', tags: ['ปาร์ตี้', '5 รอบ'] },
+        { id: 'dots',     name: 'จุดต่อกล่อง',   icon: '🔲', bg: 'linear-gradient(135deg,#312e81,#6d28d9)',
+          desc: 'ผลัดกันลากเส้น ปิดกล่องได้ก็ได้แต้มและได้เล่นต่อ', tags: ['ผลัดกันเล่น', 'วางแผน'] },
+      ] },
     ];
     const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    document.getElementById('games').innerHTML = GAMES.map((g) => `
+    const card = (g) => `
       <a class="game-card" href="games/${g.id}/">
         <div class="art" style="background:${g.bg}">${g.icon}</div>
         <div class="body">
           <h2>${esc(g.name)}</h2>
           <p>${esc(g.desc)}</p>
-          <div class="tags"><span class="tag">👥 ${esc(g.players)}</span>${g.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+          <div class="tags"><span class="tag">👥 1–6 คน · 🤖 มีบอท</span>${g.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>
         </div>
-      </a>`).join('');
+      </a>`;
+    document.getElementById('games').innerHTML = SECTIONS.map((s) =>
+      `<h2 class="section-title">${s.title}</h2><div class="games">${s.games.map(card).join('')}</div>`).join('');
   </script>
 </body>
 </html>

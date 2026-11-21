@@ -5,7 +5,7 @@ const ROUNDS = 5;
 const POINTS = [3, 2, 1, 0];
 const LIMIT_MS = 3000;
 
-createLobby({ title: '⚡ นิ้วไว', minPlayers: 1, maxPlayers: 6, onStart });
+createLobby({ title: '⚡ นิ้วไว', minPlayers: 1, maxPlayers: 6, bots: true, onStart });
 
 function onStart(room) {
   const pad = document.getElementById('pad');
@@ -111,10 +111,18 @@ function hostLogic(room, again) {
     taps = {};
     phase = 'wait';
     room.broadcast({ type: 'wait', round: r, scores: scoreList() });
+    for (const p of room.players.filter((x) => x.bot)) {
+      if (Math.random() < 0.08) { const round = r; setTimeout(() => handle({ type: 'early', round }, p.id), 600 + Math.random() * 800); }
+    }
     goTimer = setTimeout(() => {
       phase = 'go';
       room.broadcast({ type: 'go', round: r });
       limitTimer = setTimeout(finishRound, LIMIT_MS);
+      for (const p of room.players.filter((x) => x.bot)) {
+        const ms = Math.round(230 + Math.random() * 230);
+        const round = r;
+        setTimeout(() => handle({ type: 'tap', round, ms }, p.id), ms);
+      }
     }, 1500 + Math.random() * 3000);
   }
 
@@ -138,13 +146,14 @@ function hostLogic(room, again) {
 
   const allDone = () => ids().every((id) => taps[id]);
 
-  room.on('input', (d, from) => {
+  function handle(d, from) {
     if (d.round !== r || taps[from] || !(from in scores)) return;
     if (d.type === 'early' && (phase === 'wait' || phase === 'go')) taps[from] = { early: true };
     else if (d.type === 'tap' && phase === 'go') taps[from] = { ms: Math.max(0, Math.min(LIMIT_MS, Number(d.ms) || LIMIT_MS)) };
     else return;
     if (allDone()) finishRound();
-  });
+  }
+  room.on('input', handle);
   room.on('leave', () => { if ((phase === 'wait' || phase === 'go') && allDone()) finishRound(); });
 
   again.onclick = startGame;

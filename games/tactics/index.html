@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>สนามยุทธ์ · Selva World</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <style>
+    .board-wrap { overflow: auto; border-radius: var(--radius); border: 1px solid var(--line); background: #0c0a17; max-width: 100%; }
+    .board { display: grid; grid-template-columns: repeat(var(--n), var(--cell)); grid-auto-rows: var(--cell); gap: 2px; padding: 6px; width: max-content; margin: 0 auto; }
+    .cell { position: relative; border-radius: 6px; display: grid; place-items: center; cursor: pointer; user-select: none; -webkit-user-select: none; font-size: calc(var(--cell) * .55); }
+    .t-dot { background: #1d3a29; }
+    .t-F { background: #0f4a2a; }
+    .t-R { background: #3f3a36; cursor: default; }
+    .t-W { background: #1e3a6e; cursor: default; }
+    .cell .terr { opacity: .55; font-size: .7em; pointer-events: none; }
+    .cell.mv { box-shadow: inset 0 0 0 100px #38bdf880, inset 0 0 0 2px #7dd3fc; }
+    .cell.rng { box-shadow: inset 0 0 0 100px #ef444470, inset 0 0 0 2px #fca5a5aa; }
+    .cell.threat::after { content: ''; position: absolute; inset: 0; border-radius: 6px; background: repeating-linear-gradient(45deg, #f8717140 0 4px, transparent 4px 8px); pointer-events: none; }
+    .cell.tg { box-shadow: inset 0 0 0 3px #f87171, 0 0 10px #f87171; }
+    .cell.aim { box-shadow: inset 0 0 0 4px #fde047, 0 0 14px #fde047; }
+    .cell.sel { box-shadow: inset 0 0 0 3px #fff; }
+    .unit {
+      position: relative; width: 88%; height: 88%; border-radius: 50%; display: grid; place-items: center;
+      background: color-mix(in srgb, var(--pc) 35%, #111); border: 3px solid var(--pc); line-height: 1; pointer-events: none;
+    }
+    .unit.done { filter: grayscale(.85) brightness(.7); }
+    .unit.ghost { opacity: .75; border-style: dashed; }
+    .unit .hp { position: absolute; left: 6%; right: 6%; bottom: -6px; height: 5px; background: #000a; border-radius: 3px; overflow: hidden; }
+    .unit .hp i { display: block; height: 100%; background: #4ade80; }
+    .unit .hp i.mid { background: #facc15; }
+    .unit .hp i.low { background: #f87171; }
+    .panel { display: flex; flex-direction: column; gap: 10px; }
+    .box { background: var(--bg2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .box h4 { margin: 0; font-size: 1rem; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; font-size: .85rem; color: var(--muted); text-align: center; }
+    .stats b { display: block; color: var(--text); font-size: 1rem; }
+    .fc { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; text-align: center; }
+    .fc .big { font-size: 1.5rem; font-weight: 800; }
+    .fc .dmg { color: #fca5a5; }
+    .log { color: var(--muted); font-size: .85rem; max-height: 140px; overflow: auto; display: flex; flex-direction: column-reverse; }
+    .row2 { display: flex; gap: 8px; flex-wrap: wrap; }
+    .row2 .btn { flex: 1; }
+    .players .score { font-size: .95rem; }
+    /* phones: keep the move/attack controls on screen while the board is in view */
+    @media (max-width: 760px) {
+      .actionbox { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 20; box-shadow: 0 10px 30px #000d; border-color: var(--accent2); }
+      main { padding-bottom: 210px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar"><a class="back" href="../../">← หน้าหลัก</a><h1>⚔️ สนามยุทธ์</h1></header>
+  <main>
+    <section id="lobby"></section>
+    <section id="game" hidden>
+      <div class="game-layout">
+        <div class="board-wrap"><div class="board" id="board"></div></div>
+        <aside class="panel" id="panel"></aside>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="game.js"></script>
+</body>
+</html>
