@@ -1,17 +1,18 @@
 // Tactics Arena rules: pure functions shared by host, clients and bots.
 // Deterministic combat (no dice): what the forecast shows is exactly what happens.
+// Class/terrain `name` and `note` are translation keys (see game.js).
 
 export const CLASSES = {
-  knight: { name: 'อัศวิน', icon: '🛡️', hp: 32, atk: 10, def: 6, mov: 3, min: 1, max: 1, note: 'ถึก ตีระยะประชิด' },
-  archer: { name: 'นักธนู', icon: '🏹', hp: 22, atk: 9, def: 2, mov: 4, min: 2, max: 3, note: 'ยิงไกล 2–3 ช่อง ตีประชิดไม่ได้' },
-  mage: { name: 'จอมเวท', icon: '🔮', hp: 20, atk: 11, def: 1, mov: 3, min: 1, max: 2, magic: true, note: 'เวทลดเกราะศัตรูครึ่งหนึ่ง' },
+  knight: { name: 'tc.c.knight', icon: '🛡️', hp: 32, atk: 10, def: 6, mov: 3, min: 1, max: 1, note: 'tc.n.knight' },
+  archer: { name: 'tc.c.archer', icon: '🏹', hp: 22, atk: 9, def: 2, mov: 4, min: 2, max: 3, note: 'tc.n.archer' },
+  mage: { name: 'tc.c.mage', icon: '🔮', hp: 20, atk: 11, def: 1, mov: 3, min: 1, max: 2, magic: true, note: 'tc.n.mage' },
 };
 export const SQUAD = ['knight', 'archer', 'mage'];
 export const TERRAIN = {
-  '.': { name: 'ทุ่งหญ้า', cost: 1, def: 0 },
-  F: { name: 'ป่า', cost: 2, def: 2 },
-  R: { name: 'หิน', cost: Infinity, def: 0 },
-  W: { name: 'น้ำ', cost: Infinity, def: 0 },
+  '.': { name: 'tc.t.plain', cost: 1, def: 0 },
+  F: { name: 'tc.t.forest', cost: 2, def: 2 },
+  R: { name: 'tc.t.rock', cost: Infinity, def: 0 },
+  W: { name: 'tc.t.water', cost: Infinity, def: 0 },
 };
 export const MAX_ROUNDS = 30;
 const KILL_BONUS = 25;

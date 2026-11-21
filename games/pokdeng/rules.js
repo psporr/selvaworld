@@ -6,7 +6,7 @@ export const pointOf = (c) => { const r = rankOf(c); return r === 14 ? 1 : r >= 
 /**
  * Evaluate a Pok Deng hand.
  * key: higher wins (Pok > Tong > Straight flush > Straight > Sian > points)
- * deng: payout multiplier when this hand wins
+ * deng: payout multiplier when this hand wins; kind: pok | tong | sf | straight | sian | pts
  */
 export function evaluate(cards) {
   const pts = cards.reduce((a, c) => a + pointOf(c), 0) % 10;
@@ -16,7 +16,7 @@ export function evaluate(cards) {
   if (cards.length === 2) {
     const pok = pts >= 8;
     const deng = flush || rs[0] === rs[1] ? 2 : 1;
-    return { key: pok ? 200 + pts : pts, pts, pok, deng, label: (pok ? `ป็อก ${pts}` : `${pts} แต้ม`) + (deng > 1 ? ' · 2 เด้ง' : '') };
+    return { key: pok ? 200 + pts : pts, pts, pok, deng, kind: pok ? 'pok' : 'pts' };
   }
 
   const tong = rs[0] === rs[2];
@@ -25,11 +25,11 @@ export function evaluate(cards) {
   const high = lowAce ? 3 : rs[2];
   const sian = rs.every((r) => r >= 11 && r <= 13);
 
-  if (tong) return { key: 180 + rs[0], pts, deng: 5, label: 'ตอง · 5 เด้ง' };
-  if (straight && flush) return { key: 160 + high, pts, deng: 5, label: 'สเตรทฟลัช · 5 เด้ง' };
-  if (straight) return { key: 140 + high, pts, deng: 3, label: 'เรียง · 3 เด้ง' };
-  if (sian) return { key: 120, pts, deng: 3, label: 'เซียน · 3 เด้ง' };
-  return { key: pts, pts, deng: flush ? 3 : 1, label: `${pts} แต้ม` + (flush ? ' · 3 เด้ง' : '') };
+  if (tong) return { key: 180 + rs[0], pts, deng: 5, kind: 'tong' };
+  if (straight && flush) return { key: 160 + high, pts, deng: 5, kind: 'sf' };
+  if (straight) return { key: 140 + high, pts, deng: 3, kind: 'straight' };
+  if (sian) return { key: 120, pts, deng: 3, kind: 'sian' };
+  return { key: pts, pts, deng: flush ? 3 : 1, kind: 'pts' };
 }
 
 /** Money the player wins (+) or loses (−) against the dealer. */

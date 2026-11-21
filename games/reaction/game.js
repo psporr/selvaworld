@@ -1,11 +1,27 @@
 import { createLobby, playerItems } from '../../js/lobby.js';
 import { escapeHtml } from '../../js/net.js';
+import { t, addStrings, onLang } from '../../js/i18n.js';
 
 const ROUNDS = 5;
 const POINTS = [3, 2, 1, 0];
 const LIMIT_MS = 3000;
 
-createLobby({ title: '⚡ นิ้วไว', minPlayers: 1, maxPlayers: 6, bots: true, onStart });
+addStrings({
+  th: {
+    'rx.ready': 'เตรียมตัว...', 'rx.howto': 'แตะ/คลิก หรือกด Space เมื่อจอเป็นสีเขียว', 'rx.score': 'คะแนน',
+    'rx.round': 'รอบ {n}/{total}', 'rx.waitGreen': 'รอสีเขียว... อย่าเพิ่งแตะ!', 'rx.tap': 'แตะเลย!',
+    'rx.early': 'แตะก่อน ❌', 'rx.none': 'ไม่ได้แตะ', 'rx.result': 'ผลรอบ {n}', 'rx.tooEarly': 'เร็วไป!',
+    'rx.foul': 'ฟาวล์รอบนี้ −1 คะแนน', 'rx.waitFriends': 'รอเพื่อน...',
+  },
+  en: {
+    'rx.ready': 'Get ready...', 'rx.howto': 'Tap/click or press Space when the screen turns green', 'rx.score': 'Score',
+    'rx.round': 'Round {n}/{total}', 'rx.waitGreen': "Wait for green... don't tap yet!", 'rx.tap': 'TAP!',
+    'rx.early': 'Too early ❌', 'rx.none': 'No tap', 'rx.result': 'Round {n} results', 'rx.tooEarly': 'Too early!',
+    'rx.foul': 'Foul: −1 point this round', 'rx.waitFriends': 'Waiting for the others...',
+  },
+});
+
+createLobby({ title: 'g.reaction', minPlayers: 1, maxPlayers: 6, bots: true, onStart });
 
 function onStart(room) {
   const pad = document.getElementById('pad');
@@ -17,35 +33,40 @@ function onStart(room) {
   let round = 0;
   let goAt = 0;
   let tapped = false;
+  let padView = null;   // { cls, big(), small() } so it can be re-rendered in another language
+  let lastScores = [];
 
-  const setPad = (cls, big, small = '') => {
+  const setPad = (cls, big, small = () => '') => {
+    padView = { cls, big, small };
     pad.className = cls;
-    pad.innerHTML = `<div class="big">${big}</div><div class="small">${small}</div>`;
+    pad.innerHTML = `<div class="big">${big()}</div><div class="small">${small()}</div>`;
   };
   const renderBoard = (scores) => {
+    lastScores = scores;
     board.innerHTML = playerItems(scores, room.myId, (p) => `<span class="score">${p.score}</span>`);
   };
+  onLang(() => { if (padView) setPad(padView.cls, padView.big, padView.small); renderBoard(lastScores); });
 
   room.on('message', (m) => {
     switch (m.type) {
       case 'wait':
         phase = 'wait'; round = m.round; tapped = false; again.hidden = true;
-        setPad('wait', `รอบ ${m.round}/${ROUNDS}`, 'รอสีเขียว... อย่าเพิ่งแตะ!');
+        setPad('wait', () => t('rx.round', { n: m.round, total: ROUNDS }), () => t('rx.waitGreen'));
         renderBoard(m.scores);
         break;
       case 'go':
         if (m.round !== round || tapped) return;
         phase = 'go'; goAt = performance.now();
-        setPad('go', 'แตะเลย!');
+        setPad('go', () => t('rx.tap'));
         break;
       case 'result': {
         phase = 'result';
-        const rows = m.results.map((r) => {
-          const what = r.early ? 'แตะก่อน ❌' : r.ms != null ? `${r.ms} ms` : 'ไม่ได้แตะ';
+        const rows = () => m.results.map((r) => {
+          const what = r.early ? t('rx.early') : r.ms != null ? `${r.ms} ms` : t('rx.none');
           const pts = r.points > 0 ? `+${r.points}` : `${r.points}`;
           return `${escapeHtml(r.name)}: ${what} <span class="ms">(${pts})</span>`;
         }).join('<br>');
-        setPad('result', `ผลรอบ ${m.round}`, rows);
+        setPad('result', () => t('rx.result', { n: m.round }), rows);
         renderBoard(m.scores);
         break;
       }
@@ -53,10 +74,10 @@ function onStart(room) {
         phase = 'end';
         const top = m.scores[0];
         const tie = m.scores.filter((s) => s.score === top.score).length > 1;
-        setPad('end', tie ? 'เสมอ! 🤝' : `🏆 ${escapeHtml(top.name)} ชนะ!`, `${top.score} คะแนน`);
+        setPad('end', () => (tie ? t('c.tie') : escapeHtml(t('c.wins', { name: top.name }))),
+          () => t('c.points', { n: top.score }) + (room.isHost ? '' : `<br>${t('c.waitHostAgain')}`));
         renderBoard(m.scores);
         if (room.isHost) again.hidden = false;
-        else pad.querySelector('.small').insertAdjacentHTML('beforeend', '<br>รอหัวหน้าห้องเริ่มเกมใหม่');
         break;
       }
     }
@@ -67,12 +88,12 @@ function onStart(room) {
     if (phase === 'wait') {
       tapped = true;
       room.toHost({ type: 'early', round });
-      setPad('early', 'เร็วไป!', 'ฟาวล์รอบนี้ −1 คะแนน');
+      setPad('early', () => t('rx.tooEarly'), () => t('rx.foul'));
     } else if (phase === 'go') {
       tapped = true;
       const ms = Math.round(performance.now() - goAt);
       room.toHost({ type: 'tap', round, ms });
-      setPad('done', `${ms} ms`, 'รอเพื่อน...');
+      setPad('done', () => `${ms} ms`, () => t('rx.waitFriends'));
     }
   };
   pad.addEventListener('pointerdown', (e) => { e.preventDefault(); tap(); });

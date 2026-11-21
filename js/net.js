@@ -3,13 +3,16 @@
 // receives inputs from players and broadcasts state back to everyone.
 // No backend is needed, so the site works on GitHub Pages.
 
+import { t, pname } from './i18n.js';
+
 const PREFIX = 'selvaworld-v1-';
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
 export const COLORS = ['#ff5c7a', '#4cc9f0', '#ffd166', '#7bd389', '#c084fc', '#fb923c'];
 
+/** Escape for HTML; bot names are shown in the viewer's language. */
 export function escapeHtml(s) {
-  return String(s ?? '').replace(/[&<>"']/g, (ch) => ({
+  return pname(String(s ?? '')).replace(/[&<>"']/g, (ch) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   }[ch]));
 }
@@ -57,7 +60,7 @@ export class Room extends Emitter {
         if (err?.type !== 'unavailable-id') throw new Error(describe(err));
       }
     }
-    throw new Error('สร้างห้องไม่สำเร็จ ลองใหม่อีกครั้ง');
+    throw new Error(t('net.createFail'));
   }
 
   static _tryHost(name, maxPlayers, code) {
@@ -91,10 +94,10 @@ export class Room extends Emitter {
     conn.on('data', (msg) => {
       if (!msg || typeof msg !== 'object') return;
       if (msg.t === 'hello') {
-        if (this.locked) return this._refuse(conn, 'เกมเริ่มไปแล้ว รอรอบหน้านะ');
-        if (this.players.length >= this.maxPlayers) return this._refuse(conn, 'ห้องเต็มแล้ว');
+        if (this.locked) return this._refuse(conn, 'net.started');
+        if (this.players.length >= this.maxPlayers) return this._refuse(conn, 'net.full');
         const color = this._freeColor();
-        const name = String(msg.name || 'ผู้เล่น').slice(0, 16);
+        const name = String(msg.name || 'Player').slice(0, 16);
         this.conns.set(conn.peer, conn);
         this.players.push({ id: conn.peer, name, color });
         conn.send({ t: 'welcome', id: conn.peer, players: this.players });
@@ -119,7 +122,7 @@ export class Room extends Emitter {
   addBot() {
     if (!this.isHost || this.locked || this.players.length >= this.maxPlayers) return;
     const taken = new Set(this.players.map((p) => p.name));
-    const name = BOT_NAMES.find((n) => !taken.has(n)) || `บอท ${this.players.length}`;
+    const name = BOT_NAMES.find((n) => !taken.has(n)) || `Bot ${this.players.length}`;
     this.players.push({ id: `bot-${makeCode(6)}`, name, color: this._freeColor(), bot: true });
     this._syncPlayers();
   }
@@ -162,9 +165,9 @@ export class Room extends Emitter {
         peer.destroy();
         reject(new Error(msg));
       };
-      const timer = setTimeout(() => fail('เชื่อมต่อไม่สำเร็จ (หมดเวลา) ลองตรวจรหัสห้องอีกครั้ง'), 15000);
+      const timer = setTimeout(() => fail(t('net.timeout')), 15000);
       peer.on('error', (err) => {
-        if (!done) fail(err?.type === 'peer-unavailable' ? 'ไม่พบห้องนี้ ตรวจรหัสอีกครั้ง' : describe(err));
+        if (!done) fail(err?.type === 'peer-unavailable' ? t('net.noRoom') : describe(err));
         else room.emit('error', err);
       });
       peer.on('open', () => {
@@ -182,12 +185,12 @@ export class Room extends Emitter {
               clearTimeout(timer);
               resolve(room);
               break;
-            case 'reject': fail(msg.reason); break;
+            case 'reject': fail(t(msg.reason)); break;
             case 'players': room.players = msg.players; room.emit('players', room.players); break;
             case 'msg': room.emit('message', msg.d); break;
           }
         });
-        conn.on('close', () => { if (done) room._lost(); else fail('การเชื่อมต่อถูกปิด'); });
+        conn.on('close', () => { if (done) room._lost(); else fail(t('net.closed')); });
       });
     });
   }
@@ -235,10 +238,10 @@ export class Room extends Emitter {
 
 function describe(err) {
   const map = {
-    'browser-incompatible': 'เบราว์เซอร์นี้ไม่รองรับ WebRTC',
-    network: 'เชื่อมต่อเซิร์ฟเวอร์จับคู่ไม่ได้ ตรวจอินเทอร์เน็ต',
-    'server-error': 'เซิร์ฟเวอร์จับคู่มีปัญหา ลองใหม่อีกครั้ง',
-    'socket-error': 'เชื่อมต่อเซิร์ฟเวอร์จับคู่ไม่ได้',
+    'browser-incompatible': 'net.browser',
+    network: 'net.network',
+    'server-error': 'net.server',
+    'socket-error': 'net.socket',
   };
-  return map[err?.type] || `เกิดข้อผิดพลาด: ${err?.type || err?.message || err}`;
+  return map[err?.type] ? t(map[err.type]) : t('net.error', { e: err?.type || err?.message || err });
 }

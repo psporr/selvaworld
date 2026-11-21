@@ -1,6 +1,7 @@
 import { rankOf, suitOf } from '../../js/cards.js';
 
-export const HAND_NAMES = ['ไฮการ์ด', 'วันแพร์', 'ทูแพร์', 'ตอง', 'สเตรท', 'ฟลัช', 'ฟูลเฮาส์', 'โฟร์การ์ด', 'สเตรทฟลัช'];
+// translation keys by category (high card … straight flush); see games/poker/game.js
+export const HAND_NAMES = ['pk.h.high', 'pk.h.pair', 'pk.h.twopair', 'pk.h.trips', 'pk.h.straight', 'pk.h.flush', 'pk.h.full', 'pk.h.quads', 'pk.h.sf'];
 
 /** Score 5 cards as [category, ...tiebreakers]; compare with cmp(). */
 export function eval5(cs) {
@@ -47,7 +48,7 @@ export function best(cards) {
       if (!bestScore || cmp(s, bestScore) > 0) { bestScore = s; bestCards = five; }
     }
   if (!bestScore) return null;
-  const name = bestScore[0] === 8 && bestScore[1] === 14 ? 'รอยัลฟลัช' : HAND_NAMES[bestScore[0]];
+  const name = bestScore[0] === 8 && bestScore[1] === 14 ? 'pk.h.royal' : HAND_NAMES[bestScore[0]];
   return { score: bestScore, cards: bestCards, name };
 }
 

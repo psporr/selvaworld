@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Selva World</title>
-  <meta name="description" content="Selva World: เกมออนไลน์เล่นกับเพื่อนได้ 1–6 คนบนเว็บ">
+  <meta name="description" content="Selva World: เกมออนไลน์เล่นกับเพื่อนได้ 1–6 คนบนเว็บ · Online games for 1–6 friends in the browser">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header class="hero">
     <h1 class="logo">Selva World</h1>
-    <p>เกมออนไลน์สั้นๆ เล่นกับเพื่อนได้สูงสุด 6 คน หรือเล่นคนเดียวกับบอทก็ได้ ไม่ต้องสมัคร ไม่ต้องลงแอป</p>
+    <p data-i18n="p.tagline"></p>
     <ol class="steps">
-      <li><b>1.</b> เลือกเกม</li>
-      <li><b>2.</b> สร้างห้อง</li>
-      <li><b>3.</b> ส่งรหัสหรือลิงก์ให้เพื่อน</li>
-      <li><b>4.</b> กดเริ่มเกม!</li>
+      <li><b>1.</b> <span data-i18n="p.step1"></span></li>
+      <li><b>2.</b> <span data-i18n="p.step2"></span></li>
+      <li><b>3.</b> <span data-i18n="p.step3"></span></li>
+      <li><b>4.</b> <span data-i18n="p.step4"></span></li>
     </ol>
   </header>
 
@@ -24,49 +24,87 @@
     <div id="games"></div>
   </main>
 
-  <p class="footer">เชื่อมต่อแบบ peer-to-peer (WebRTC) เบราว์เซอร์ของคนสร้างห้องจะทำหน้าที่เป็นเซิร์ฟเวอร์</p>
+  <p class="footer" data-i18n="p.footer"></p>
 
-  <script>
-    // เพิ่มเกมใหม่: เพิ่ม object ในลิสต์นี้ และสร้างโฟลเดอร์ games/<id>/
-    // เพิ่มเกมใหม่: เพิ่ม object ในลิสต์นี้ และสร้างโฟลเดอร์ games/<id>/
+  <script type="module">
+    import { t, addStrings, onLang } from './js/i18n.js';
+
+    // To add a game: add it to a section below, add its name ('g.<id>') to js/i18n.js,
+    // its description/tags here, and create games/<id>/.
     const SECTIONS = [
-      { title: '🎮 สายเกมเมอร์', games: [
-        { id: 'tactics',  name: 'สนามยุทธ์',     icon: '⚔️', bg: 'linear-gradient(135deg,#1e1b4b,#7c2d12)',
-          desc: 'SRPG บนตาราง คุมอัศวิน นักธนู จอมเวท เดินยึดป่า ตีโต้กลับ ทีมสุดท้ายที่รอดชนะ', tags: ['SRPG', 'วางแผน'] },
-        { id: 'gems',     name: 'เพชรเรียงสาม',  icon: '💎', bg: 'linear-gradient(135deg,#1e3a8a,#9d174d)',
-          desc: 'แข่งเรียงเพชร 90 วินาที ทุกคนเริ่มกระดานเดียวกัน ต่อคอมโบให้คะแนนพุ่ง', tags: ['ปริศนา', 'แข่งเวลา'] },
-        { id: 'dice',     name: 'ยอดลูกเต๋า',    icon: '🎲', bg: 'linear-gradient(135deg,#4c1d95,#0e7490)',
-          desc: 'บอร์ดเกมลูกเต๋า ทอยได้ 3 ครั้ง เลือกเก็บลูก ลงช่องคะแนนให้คุ้ม 12 รอบจบ', tags: ['บอร์ดเกม', 'ดวง+วางแผน'] },
+      { title: 'p.sec.gamer', games: [
+        { id: 'tactics',  icon: '⚔️', bg: 'linear-gradient(135deg,#1e1b4b,#7c2d12)', tags: ['tag.srpg', 'tag.strategy'] },
+        { id: 'gems',     icon: '💎', bg: 'linear-gradient(135deg,#1e3a8a,#9d174d)', tags: ['tag.puzzle', 'tag.timed'] },
+        { id: 'dice',     icon: '🎲', bg: 'linear-gradient(135deg,#4c1d95,#0e7490)', tags: ['tag.board', 'tag.luck'] },
       ] },
-      { title: '🃏 ไพ่ไทย', games: [
-        { id: 'pokdeng',  name: 'ป็อกเด้ง',      icon: '🃏', bg: 'linear-gradient(135deg,#7f1d1d,#be123c)',
-          desc: 'ผลัดกันเป็นเจ้ามือ ป็อก 8 ป็อก 9 สองเด้ง สามเด้ง ตอง เรียง เซียน ครบ', tags: ['ไพ่', 'ปาร์ตี้'] },
-        { id: 'slave',    name: 'สลาฟ',          icon: '👑', bg: 'linear-gradient(135deg,#713f12,#ca8a04)',
-          desc: 'ลงไพ่ให้หมดก่อนเป็นคิง คนสุดท้ายเป็นสลาฟ ต้องแลกไพ่ดีให้คิงรอบหน้า', tags: ['ไพ่', 'กติกาไทย'] },
-        { id: 'poker',    name: 'โป๊กเกอร์',      icon: '♠️', bg: 'linear-gradient(135deg,#064e3b,#047857)',
-          desc: 'Texas Hold\'em เริ่มคนละ 1000 ชิป บลายด์ 10/20 เล่นจนเหลือผู้ชนะคนเดียว', tags: ['ไพ่', 'วางแผน'] },
+      { title: 'p.sec.cards', games: [
+        { id: 'pokdeng',  icon: '🃏', bg: 'linear-gradient(135deg,#7f1d1d,#be123c)', tags: ['tag.cards', 'tag.party'] },
+        { id: 'slave',    icon: '👑', bg: 'linear-gradient(135deg,#713f12,#ca8a04)', tags: ['tag.cards', 'tag.thai'] },
+        { id: 'poker',    icon: '♠️', bg: 'linear-gradient(135deg,#064e3b,#047857)', tags: ['tag.cards', 'tag.strategy'] },
       ] },
-      { title: '🎉 ปาร์ตี้', games: [
-        { id: 'snake',    name: 'งูสี่ทิศ',      icon: '🐍', bg: 'linear-gradient(135deg,#14532d,#0f766e)',
-          desc: 'เก็บผลไม้ให้ตัวยาว หลบงูของเพื่อน คนสุดท้ายที่รอดชนะ', tags: ['เรียลไทม์', 'แอ็กชัน'] },
-        { id: 'reaction', name: 'นิ้วไว',         icon: '⚡', bg: 'linear-gradient(135deg,#7c2d12,#b45309)',
-          desc: 'จอเปลี่ยนเป็นสีเขียวเมื่อไหร่ แตะให้ไวที่สุด แตะก่อนโดนหักคะแนน', tags: ['ปาร์ตี้', '5 รอบ'] },
-        { id: 'dots',     name: 'จุดต่อกล่อง',   icon: '🔲', bg: 'linear-gradient(135deg,#312e81,#6d28d9)',
-          desc: 'ผลัดกันลากเส้น ปิดกล่องได้ก็ได้แต้มและได้เล่นต่อ', tags: ['ผลัดกันเล่น', 'วางแผน'] },
+      { title: 'p.sec.party', games: [
+        { id: 'snake',    icon: '🐍', bg: 'linear-gradient(135deg,#14532d,#0f766e)', tags: ['tag.realtime', 'tag.action'] },
+        { id: 'reaction', icon: '⚡', bg: 'linear-gradient(135deg,#7c2d12,#b45309)', tags: ['tag.party', 'tag.5rounds'] },
+        { id: 'dots',     icon: '🔲', bg: 'linear-gradient(135deg,#312e81,#6d28d9)', tags: ['tag.turns', 'tag.strategy'] },
       ] },
     ];
-    const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+    addStrings({
+      th: {
+        'p.tagline': 'เกมออนไลน์สั้นๆ เล่นกับเพื่อนได้สูงสุด 6 คน หรือเล่นคนเดียวกับบอทก็ได้ ไม่ต้องสมัคร ไม่ต้องลงแอป',
+        'p.step1': 'เลือกเกม', 'p.step2': 'สร้างห้อง', 'p.step3': 'ส่งรหัสหรือลิงก์ให้เพื่อน', 'p.step4': 'กดเริ่มเกม!',
+        'p.footer': 'เชื่อมต่อแบบ peer-to-peer (WebRTC) เบราว์เซอร์ของคนสร้างห้องจะทำหน้าที่เป็นเซิร์ฟเวอร์',
+        'p.sec.gamer': '🎮 สายเกมเมอร์', 'p.sec.cards': '🃏 ไพ่ไทย', 'p.sec.party': '🎉 ปาร์ตี้',
+        'p.players': '👥 1–6 คน · 🤖 มีบอท',
+        'd.tactics': 'SRPG บนตาราง คุมอัศวิน นักธนู จอมเวท เดินยึดป่า ตีโต้กลับ ทีมสุดท้ายที่รอดชนะ',
+        'd.gems': 'แข่งเรียงเพชร 90 วินาที ทุกคนเริ่มกระดานเดียวกัน ต่อคอมโบให้คะแนนพุ่ง',
+        'd.dice': 'บอร์ดเกมลูกเต๋า ทอยได้ 3 ครั้ง เลือกเก็บลูก ลงช่องคะแนนให้คุ้ม 12 รอบจบ',
+        'd.pokdeng': 'ผลัดกันเป็นเจ้ามือ ป็อก 8 ป็อก 9 สองเด้ง สามเด้ง ตอง เรียง เซียน ครบ',
+        'd.slave': 'ลงไพ่ให้หมดก่อนเป็นคิง คนสุดท้ายเป็นสลาฟ ต้องแลกไพ่ดีให้คิงรอบหน้า',
+        'd.poker': "Texas Hold'em เริ่มคนละ 1000 ชิป บลายด์ 10/20 เล่นจนเหลือผู้ชนะคนเดียว",
+        'd.snake': 'เก็บผลไม้ให้ตัวยาว หลบงูของเพื่อน คนสุดท้ายที่รอดชนะ',
+        'd.reaction': 'จอเปลี่ยนเป็นสีเขียวเมื่อไหร่ แตะให้ไวที่สุด แตะก่อนโดนหักคะแนน',
+        'd.dots': 'ผลัดกันลากเส้น ปิดกล่องได้ก็ได้แต้มและได้เล่นต่อ',
+        'tag.srpg': 'SRPG', 'tag.strategy': 'วางแผน', 'tag.puzzle': 'ปริศนา', 'tag.timed': 'แข่งเวลา', 'tag.board': 'บอร์ดเกม',
+        'tag.luck': 'ดวง+วางแผน', 'tag.cards': 'ไพ่', 'tag.party': 'ปาร์ตี้', 'tag.thai': 'กติกาไทย', 'tag.realtime': 'เรียลไทม์',
+        'tag.action': 'แอ็กชัน', 'tag.5rounds': '5 รอบ', 'tag.turns': 'ผลัดกันเล่น',
+      },
+      en: {
+        'p.tagline': 'Quick online games for up to 6 friends, or play solo against bots. No sign-up, no install.',
+        'p.step1': 'Pick a game', 'p.step2': 'Create a room', 'p.step3': 'Send the code or link to friends', 'p.step4': 'Hit start!',
+        'p.footer': "Peer-to-peer (WebRTC): the room creator's browser acts as the game server",
+        'p.sec.gamer': '🎮 For gamers', 'p.sec.cards': '🃏 Thai card games', 'p.sec.party': '🎉 Party',
+        'p.players': '👥 1–6 players · 🤖 bots',
+        'd.tactics': 'Grid SRPG: command a knight, archer and mage, take the forests, trade blows. Last squad standing wins.',
+        'd.gems': 'A 90-second match-3 race. Everyone starts from the same board; chain combos to rack up points.',
+        'd.dice': 'Tabletop dice: roll up to 3 times, keep the dice you like and fill the best category. 12 rounds.',
+        'd.pokdeng': 'Take turns as dealer. Pok 8/9, double and triple deng, three of a kind, straights, court cards.',
+        'd.slave': 'Get rid of your cards first to be King. The last one out is the Slave and hands over their best cards.',
+        'd.poker': "Texas Hold'em with 1000 chips each and 10/20 blinds, played until one winner remains.",
+        'd.snake': 'Eat fruit to grow, dodge the other snakes. Last snake alive wins.',
+        'd.reaction': "Tap the moment the screen turns green. Tap too early and you lose a point.",
+        'd.dots': 'Take turns drawing lines. Close a box to score and go again.',
+        'tag.srpg': 'SRPG', 'tag.strategy': 'Strategy', 'tag.puzzle': 'Puzzle', 'tag.timed': 'Timed', 'tag.board': 'Tabletop',
+        'tag.luck': 'Luck + tactics', 'tag.cards': 'Cards', 'tag.party': 'Party', 'tag.thai': 'Thai rules', 'tag.realtime': 'Real-time',
+        'tag.action': 'Action', 'tag.5rounds': '5 rounds', 'tag.turns': 'Turn-based',
+      },
+    });
+
     const card = (g) => `
       <a class="game-card" href="games/${g.id}/">
         <div class="art" style="background:${g.bg}">${g.icon}</div>
         <div class="body">
-          <h2>${esc(g.name)}</h2>
-          <p>${esc(g.desc)}</p>
-          <div class="tags"><span class="tag">👥 1–6 คน · 🤖 มีบอท</span>${g.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+          <h2>${t('g.' + g.id)}</h2>
+          <p>${t('d.' + g.id)}</p>
+          <div class="tags"><span class="tag">${t('p.players')}</span>${g.tags.map((k) => `<span class="tag">${t(k)}</span>`).join('')}</div>
         </div>
       </a>`;
-    document.getElementById('games').innerHTML = SECTIONS.map((s) =>
-      `<h2 class="section-title">${s.title}</h2><div class="games">${s.games.map(card).join('')}</div>`).join('');
+    const render = () => {
+      document.getElementById('games').innerHTML = SECTIONS.map((s) =>
+        `<h2 class="section-title">${t(s.title)}</h2><div class="games">${s.games.map(card).join('')}</div>`).join('');
+    };
+    render();
+    onLang(render);
   </script>
 </body>
 </html>

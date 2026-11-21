@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>เพชรเรียงสาม · Selva World</title>
+  <title data-i18n="g.gems" data-i18n-after=" · Selva World">Selva World</title>
   <link rel="stylesheet" href="../../css/style.css">
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
@@ -33,7 +33,7 @@
   </style>
 </head>
 <body>
-  <header class="topbar"><a class="back" href="../../">← หน้าหลัก</a><h1>💎 เพชรเรียงสาม</h1></header>
+  <header class="topbar"><a class="back" href="../../" data-i18n="c.home">← หน้าหลัก</a><h1>💎 <span data-i18n="g.gems">เพชรเรียงสาม</span></h1></header>
   <main>
     <section id="lobby"></section>
     <section id="game" hidden>
@@ -41,16 +41,16 @@
         <div class="stage">
           <div id="board"></div>
           <div class="combo" id="combo"></div>
-          <div class="cover" id="cover">รอเริ่ม...</div>
+          <div class="cover" id="cover" data-i18n="gm.waitStart"></div>
         </div>
         <aside class="side">
           <div class="timer" id="timer">90</div>
-          <div class="muted" style="text-align:center;margin-top:-10px">วินาทีที่เหลือ</div>
-          <div class="myscore">คะแนนของคุณ<b id="myscore">0</b></div>
-          <h3>อันดับ</h3>
+          <div class="muted" style="text-align:center;margin-top:-10px" data-i18n="gm.secsLeft"></div>
+          <div class="myscore"><span data-i18n="gm.yourScore"></span><b id="myscore">0</b></div>
+          <h3 data-i18n="gm.rank"></h3>
           <ul class="players" id="list"></ul>
-          <button id="again" class="btn primary" hidden>เล่นอีกครั้ง</button>
-          <p class="muted">สลับเพชรที่อยู่ติดกันให้เรียง 3 ตัวขึ้นไป แตะทีละสองเม็ดหรือปัดก็ได้ เรียงต่อเนื่องได้คอมโบคูณคะแนน ทุกคนเริ่มจากกระดานเดียวกัน</p>
+          <button id="again" class="btn primary" hidden data-i18n="c.again"></button>
+          <p class="muted" data-i18n="gm.help"></p>
         </aside>
       </div>
     </section>

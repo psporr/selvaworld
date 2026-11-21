@@ -31,6 +31,18 @@ Every game supports 1–6 players and can be played solo against bots: the host 
 Game rules live in each game's `rules.js` (pure functions shared by host, players and bots).
 To give a new game bots, pass `bots: true` to `createLobby` and drive them with `botRunner(room, decide, handle)`.
 
+## Languages (Thai / English)
+
+Thai is the default; the **EN / ไทย** button in the top bar switches language instantly (no reload, so a game in
+progress keeps running) and the choice is remembered in the browser.
+
+- `js/i18n.js`: `t(key, params)`, `addStrings({ th: {...}, en: {...} })`, `onLang(render)`; elements with
+  `data-i18n="key"` are translated automatically. Shared strings (lobby, game names) live there; each game adds its own
+  strings at the top of its `game.js`.
+- Text the **host** sends to players (logs, hand names, titles) travels as `{ k: key, p: params }` objects and is
+  rendered with `tl()`, so a Thai host and an English guest each read it in their own language.
+- Rules files return keys (e.g. `pk.h.flush`, `sl.t.king`, `tc.c.knight`) rather than display text.
+
 ## Publishing to GitHub Pages
 
 1. Merge into the `main` branch

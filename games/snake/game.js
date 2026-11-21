@@ -1,5 +1,6 @@
 import { createLobby, playerItems } from '../../js/lobby.js';
 import { COLORS, escapeHtml } from '../../js/net.js';
+import { t, addStrings, onLang } from '../../js/i18n.js';
 
 const W = 32;
 const H = 32;
@@ -17,7 +18,18 @@ const STARTS = [
   { x: W / 2 - 1, y: H - 4, d: 'up' },
 ];
 
-createLobby({ title: '🐍 งูสี่ทิศ', minPlayers: 1, maxPlayers: 6, bots: true, onStart });
+addStrings({
+  th: {
+    'sn.list': 'ผู้เล่น (ความยาว · ชนะ)', 'sn.newRound': 'เริ่มรอบใหม่', 'sn.controls': 'บังคับด้วยปุ่มลูกศร / WASD หรือปัดจอ',
+    'sn.secs': '⏱ {n} วินาที', 'sn.ready': 'เตรียมตัว!', 'sn.soloEnd': 'จบเกม! ยาว {n} ช่อง', 'sn.draw': 'เสมอ! 💥',
+  },
+  en: {
+    'sn.list': 'Players (length · wins)', 'sn.newRound': 'New round', 'sn.controls': 'Steer with arrow keys / WASD or swipe',
+    'sn.secs': '⏱ {n} s', 'sn.ready': 'Get ready!', 'sn.soloEnd': 'Game over! Length {n}', 'sn.draw': 'Draw! 💥',
+  },
+});
+
+createLobby({ title: 'g.snake', minPlayers: 1, maxPlayers: 6, bots: true, onStart });
 
 function onStart(room) {
   const canvas = document.getElementById('board');
@@ -28,25 +40,28 @@ function onStart(room) {
   const again = document.getElementById('again');
   let state = null;
   let wins = {};
+  let bannerFn = null; // re-rendered when the language changes
+  const setBanner = (fn) => { bannerFn = fn; banner.innerHTML = fn ? fn() : ''; };
+  onLang(() => { setBanner(bannerFn); renderList(); });
 
   room.on('message', (m) => {
     if (m.type === 'state') {
       state = m;
       window.__st = m;
-      if (m.left != null) banner.textContent = `⏱ ${m.left} วินาที`;
+      if (m.left != null) setBanner(() => t('sn.secs', { n: m.left }));
       draw();
       renderList();
     }
     else if (m.type === 'countdown') {
       countEl.textContent = m.n > 0 ? m.n : '';
-      if (m.n > 0) { banner.textContent = 'เตรียมตัว!'; again.hidden = true; }
-      else banner.textContent = '';
+      if (m.n > 0) { setBanner(() => t('sn.ready')); again.hidden = true; }
+      else setBanner(null);
     } else if (m.type === 'over') {
       wins = m.wins;
       const w = m.winner && state?.snakes.find((s) => s.id === m.winner);
-      banner.innerHTML = w ? `🏆 ${escapeHtml(w.name)} ชนะ!` : m.solo ? `จบเกม! ยาว ${m.solo} ช่อง` : 'เสมอ! 💥';
+      setBanner(() => (w ? escapeHtml(t('c.wins', { name: w.name })) : m.solo ? t('sn.soloEnd', { n: m.solo }) : t('sn.draw'))
+        + (room.isHost ? '' : `<br><small class="muted">${t('c.waitHostAgain')}</small>`));
       if (room.isHost) again.hidden = false;
-      else banner.insertAdjacentHTML('beforeend', '<br><small class="muted">รอหัวหน้าห้องเริ่มรอบใหม่</small>');
       renderList();
     }
   });
@@ -265,7 +280,7 @@ function hostLogic(room, again) {
       type: 'state',
       food,
       left: running && snakes.length > 1 ? Math.max(0, Math.ceil((ROUND_MS - (Date.now() - roundStart)) / 1000)) : null,
-      snakes: snakes.map(({ id, name, color, alive, body }) => ({ id, name, color, alive, body })),
+      snakes: snakes.map(({ id, name, color, alive, body, left }) => ({ id, name, color, alive, body, left })),
     });
   }
 
@@ -276,7 +291,7 @@ function hostLogic(room, again) {
   });
   room.on('leave', (id) => {
     const s = snakes.find((x) => x.id === id);
-    if (s) { s.alive = false; s.name += ' (ออกแล้ว)'; sendState(); checkOver(); }
+    if (s) { s.alive = false; s.left = true; sendState(); checkOver(); }
   });
 
   again.onclick = newRound;

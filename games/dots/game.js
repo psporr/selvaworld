@@ -1,11 +1,23 @@
 import { createLobby, playerItems } from '../../js/lobby.js';
 import { COLORS, escapeHtml } from '../../js/net.js';
+import { t, addStrings, onLang } from '../../js/i18n.js';
 import { botRunner } from '../../js/bots.js';
 
 const S = 64; // spacing between dots (svg units)
 const M = 20; // margin
 
-createLobby({ title: '🔲 จุดต่อกล่อง', minPlayers: 2, maxPlayers: 6, bots: true, onStart });
+addStrings({
+  th: {
+    'dt.score': 'คะแนน (กล่อง)', 'dt.help': 'ผลัดกันลากเส้นระหว่างจุด ใครปิดกล่องได้ครบ 4 ด้านได้แต้ม และได้เล่นต่ออีกตา',
+    'dt.myTurn': '✏️ ตาคุณแล้ว!', 'dt.waitLine': 'รอ {name} ลากเส้น...',
+  },
+  en: {
+    'dt.score': 'Score (boxes)', 'dt.help': 'Take turns drawing a line between two dots. Close all 4 sides of a box to score it and take another turn.',
+    'dt.myTurn': '✏️ Your turn!', 'dt.waitLine': 'Waiting for {name} to draw...',
+  },
+});
+
+createLobby({ title: 'g.dots', minPlayers: 2, maxPlayers: 6, bots: true, onStart });
 
 // Indexing for an n×n grid of dots:
 //  h[r*(n-1)+c]  horizontal line (r,c)→(r,c+1), r∈[0,n-1], c∈[0,n-2]
@@ -74,15 +86,16 @@ function onStart(room) {
     if (st.over) {
       const best = Math.max(...ranked.map((p) => p.score));
       const top = ranked.filter((p) => p.score === best);
-      banner.innerHTML = top.length > 1 ? 'เสมอ! 🤝' : `🏆 ${escapeHtml(top[0].name)} ชนะ!`;
+      banner.innerHTML = top.length > 1 ? t('c.tie') : escapeHtml(t('c.wins', { name: top[0].name }));
       again.hidden = !room.isHost;
     } else {
       const cur = st.players.find((p) => p.id === st.turn);
-      banner.innerHTML = myTurn ? '✏️ ตาคุณแล้ว!' : `รอ ${escapeHtml(cur?.name || '')} ลากเส้น...`;
+      banner.innerHTML = myTurn ? t('dt.myTurn') : escapeHtml(t('dt.waitLine', { name: cur?.name || '' }));
       again.hidden = true;
     }
   }
 
+  onLang(() => st && render());
   if (room.isHost) hostLogic(room, again);
 }
 

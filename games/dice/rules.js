@@ -11,19 +11,20 @@ const hasRun = (d, len) => {
   return false;
 };
 
+// Category names/hints are translated in game.js as dc.c.<id> / dc.h.<id>.
 export const CATS = [
-  { id: 'ones', name: 'เลข 1', upper: 1, score: (d) => d.filter((v) => v === 1).length },
-  { id: 'twos', name: 'เลข 2', upper: 2, score: (d) => 2 * d.filter((v) => v === 2).length },
-  { id: 'threes', name: 'เลข 3', upper: 3, score: (d) => 3 * d.filter((v) => v === 3).length },
-  { id: 'fours', name: 'เลข 4', upper: 4, score: (d) => 4 * d.filter((v) => v === 4).length },
-  { id: 'fives', name: 'เลข 5', upper: 5, score: (d) => 5 * d.filter((v) => v === 5).length },
-  { id: 'sixes', name: 'เลข 6', upper: 6, score: (d) => 6 * d.filter((v) => v === 6).length },
-  { id: 'choice', name: 'อิสระ', hint: 'รวมทุกลูก', score: sum },
-  { id: 'four', name: 'โฟร์', hint: 'เหมือนกัน 4 ลูก = รวมทุกลูก', score: (d) => (Math.max(...counts(d)) >= 4 ? sum(d) : 0) },
-  { id: 'full', name: 'ฟูลเฮาส์', hint: '3+2 = รวมทุกลูก', score: (d) => { const c = counts(d).filter(Boolean).sort(); return (c.join() === '2,3' || c.join() === '5') ? sum(d) : 0; } },
-  { id: 'small', name: 'เรียงเล็ก', hint: 'เรียง 4 ลูก = 15', score: (d) => (hasRun(d, 4) ? 15 : 0) },
-  { id: 'large', name: 'เรียงใหญ่', hint: 'เรียง 5 ลูก = 30', score: (d) => (hasRun(d, 5) ? 30 : 0) },
-  { id: 'yacht', name: 'ยอด!', hint: 'เหมือนกัน 5 ลูก = 50', score: (d) => (Math.max(...counts(d)) === 5 ? 50 : 0) },
+  { id: 'ones', upper: 1, score: (d) => d.filter((v) => v === 1).length },
+  { id: 'twos', upper: 2, score: (d) => 2 * d.filter((v) => v === 2).length },
+  { id: 'threes', upper: 3, score: (d) => 3 * d.filter((v) => v === 3).length },
+  { id: 'fours', upper: 4, score: (d) => 4 * d.filter((v) => v === 4).length },
+  { id: 'fives', upper: 5, score: (d) => 5 * d.filter((v) => v === 5).length },
+  { id: 'sixes', upper: 6, score: (d) => 6 * d.filter((v) => v === 6).length },
+  { id: 'choice', score: sum },
+  { id: 'four', score: (d) => (Math.max(...counts(d)) >= 4 ? sum(d) : 0) },
+  { id: 'full', score: (d) => { const c = counts(d).filter(Boolean).sort(); return (c.join() === '2,3' || c.join() === '5') ? sum(d) : 0; } },
+  { id: 'small', score: (d) => (hasRun(d, 4) ? 15 : 0) },
+  { id: 'large', score: (d) => (hasRun(d, 5) ? 30 : 0) },
+  { id: 'yacht', score: (d) => (Math.max(...counts(d)) === 5 ? 50 : 0) },
 ];
 export const CAT = Object.fromEntries(CATS.map((c) => [c.id, c]));
 export const BONUS_AT = 63;

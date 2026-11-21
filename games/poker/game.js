@@ -2,14 +2,42 @@ import { createLobby } from '../../js/lobby.js';
 import { COLORS, escapeHtml } from '../../js/net.js';
 import { newDeck, cardsHTML, backHTML, rankOf, suitOf } from '../../js/cards.js';
 import { botRunner } from '../../js/bots.js';
+import { t, tl, addStrings, onLang } from '../../js/i18n.js';
 import { best, describe, splitPots } from './rules.js';
 
 const START_CHIPS = 1000;
 const SB = 10;
 const BB = 20;
-const STREET_NAME = { preflop: 'พรีฟล็อป', flop: 'ฟล็อป', turn: 'เทิร์น', river: 'ริเวอร์', showdown: 'โชว์ดาวน์' };
+addStrings({
+  th: {
+    'pk.h.high': 'ไฮการ์ด', 'pk.h.pair': 'วันแพร์', 'pk.h.twopair': 'ทูแพร์', 'pk.h.trips': 'ตอง', 'pk.h.straight': 'สเตรท',
+    'pk.h.flush': 'ฟลัช', 'pk.h.full': 'ฟูลเฮาส์', 'pk.h.quads': 'โฟร์การ์ด', 'pk.h.sf': 'สเตรทฟลัช', 'pk.h.royal': 'รอยัลฟลัช',
+    'pk.s.preflop': 'พรีฟล็อป', 'pk.s.flop': 'ฟล็อป', 'pk.s.turn': 'เทิร์น', 'pk.s.river': 'ริเวอร์', 'pk.s.showdown': 'โชว์ดาวน์',
+    'pk.busted': 'หมดตัว', 'pk.fold': 'หมอบ', 'pk.allin': 'ออลอิน', 'pk.bet': 'เดิมพัน {n}', 'pk.hand': 'มือที่ {n}', 'pk.pot': 'พอต {n}',
+    'pk.and': ' และ ', 'pk.won': '{names} ได้ {n}', 'pk.with': ' ด้วย{hand}', 'pk.champ': '🏆 {name} ชนะเกมนี้!', 'pk.allChips': 'เก็บชิปได้ทั้งหมด',
+    'pk.halfPot': '½ พอต', 'pk.potBtn': 'พอต', 'pk.check': 'เช็ค', 'pk.callAll': 'คอลออลอิน {n}', 'pk.call': 'คอล {n}',
+    'pk.raiseTo': 'เรสเป็น', 'pk.betBtn': 'เบท', 'pk.allinN': 'ออลอิน {n}', 'pk.revealing': 'กำลังเปิดไพ่...',
+    'pk.deal': 'แจกมือต่อไป', 'pk.waitDeal': 'รอหัวหน้าห้องแจกมือต่อไป', 'pk.restart': 'เริ่มเกมใหม่ (ชิปคนละ 1000)',
+    'pk.waitRestart': 'รอหัวหน้าห้องเริ่มเกมใหม่', 'pk.yourCards': 'ไพ่ของคุณ', 'pk.sitOut': 'ไม่ได้ร่วมมือนี้',
+    'pk.l.hand': 'มือที่ {n} · บลายด์ {sb}/{bb}', 'pk.a.check': 'เช็ค', 'pk.a.call': 'คอล {n}', 'pk.a.raise': 'เรส {n}', 'pk.a.bet': 'เบท {n}',
+    'pk.a.left': 'ออกจากเกม',
+  },
+  en: {
+    'pk.h.high': 'High card', 'pk.h.pair': 'One pair', 'pk.h.twopair': 'Two pair', 'pk.h.trips': 'Three of a kind', 'pk.h.straight': 'Straight',
+    'pk.h.flush': 'Flush', 'pk.h.full': 'Full house', 'pk.h.quads': 'Four of a kind', 'pk.h.sf': 'Straight flush', 'pk.h.royal': 'Royal flush',
+    'pk.s.preflop': 'Pre-flop', 'pk.s.flop': 'Flop', 'pk.s.turn': 'Turn', 'pk.s.river': 'River', 'pk.s.showdown': 'Showdown',
+    'pk.busted': 'Busted', 'pk.fold': 'Folded', 'pk.allin': 'All-in', 'pk.bet': 'Bet {n}', 'pk.hand': 'Hand {n}', 'pk.pot': 'Pot {n}',
+    'pk.and': ' and ', 'pk.won': '{names} won {n}', 'pk.with': ' with {hand}', 'pk.champ': '🏆 {name} wins the game!', 'pk.allChips': 'They took every chip',
+    'pk.halfPot': '½ pot', 'pk.potBtn': 'Pot', 'pk.check': 'Check', 'pk.callAll': 'Call all-in {n}', 'pk.call': 'Call {n}',
+    'pk.raiseTo': 'Raise to', 'pk.betBtn': 'Bet', 'pk.allinN': 'All-in {n}', 'pk.revealing': 'Dealing the board...',
+    'pk.deal': 'Deal next hand', 'pk.waitDeal': 'Waiting for the host to deal', 'pk.restart': 'New game (1000 chips each)',
+    'pk.waitRestart': 'Waiting for the host to restart', 'pk.yourCards': 'Your cards', 'pk.sitOut': 'Not in this hand',
+    'pk.l.hand': 'Hand {n} · blinds {sb}/{bb}', 'pk.a.check': 'Check', 'pk.a.call': 'Call {n}', 'pk.a.raise': 'Raise {n}', 'pk.a.bet': 'Bet {n}',
+    'pk.a.left': 'Left',
+  },
+});
 
-createLobby({ title: '♠️ โป๊กเกอร์', minPlayers: 2, maxPlayers: 6, bots: true, onStart });
+createLobby({ title: 'g.poker', minPlayers: 2, maxPlayers: 6, bots: true, onStart });
 
 function onStart(room) {
   const el = document.getElementById('table');
@@ -17,6 +45,7 @@ function onStart(room) {
   let hostNext = null;
 
   room.on('message', (m) => { if (m.type === 'state') { st = m; window.__st = m; render(); } });
+  onLang(() => st && render());
 
   el.addEventListener('click', (e) => {
     const b = e.target.closest('[data-act]');
@@ -38,27 +67,27 @@ function onStart(room) {
       let cards = '';
       if (p.hole) cards = cardsHTML(p.hole, { size: 'sm' });
       else if (p.inHand && !p.folded) cards = backHTML('sm').repeat(2);
-      const status = p.out ? '<span class="badge bad">หมดตัว</span>'
-        : p.folded ? '<span class="badge">หมอบ</span>'
-        : p.allIn ? '<span class="badge gold">ออลอิน</span>'
-        : p.act ? `<span class="badge">${p.act}</span>` : '';
+      const status = p.out ? `<span class="badge bad">${t('pk.busted')}</span>`
+        : p.folded ? `<span class="badge">${t('pk.fold')}</span>`
+        : p.allIn ? `<span class="badge gold">${t('pk.allin')}</span>`
+        : p.act ? `<span class="badge">${tl(p.act)}</span>` : '';
       return `<div class="seat ${st.toAct === p.id && st.phase === 'play' ? 'turn' : ''} ${p.folded || p.out || p.left ? 'out' : ''}" style="--pc:${COLORS[p.color % COLORS.length]}">
-        <div class="who"><span class="n">${escapeHtml(p.name)}${p.left ? ' (ออกแล้ว)' : ''}</span>${p.id === st.dealerId ? '<span class="badge gold">D</span>' : ''}</div>
-        <div class="meta"><span>🪙 ${p.chips}</span><span>${p.bet ? `เดิมพัน ${p.bet}` : ''}</span></div>
+        <div class="who"><span class="n">${escapeHtml(p.name)}${p.left ? ` ${t('c.left')}` : ''}</span>${p.id === st.dealerId ? '<span class="badge gold">D</span>' : ''}</div>
+        <div class="meta"><span>🪙 ${p.chips}</span><span>${p.bet ? t('pk.bet', { n: p.bet }) : ''}</span></div>
         <div class="cards">${cards}</div>
-        <div class="meta">${status}${p.handName ? `<span class="badge">${p.handName}</span>` : ''}${p.won ? `<span class="badge good">+${p.won}</span>` : ''}</div>
+        <div class="meta">${status}${p.handName ? `<span class="badge">${t(p.handName)}</span>` : ''}${p.won ? `<span class="badge good">+${p.won}</span>` : ''}</div>
       </div>`;
     };
 
     const board = st.board.map((c) => cardsHTML([c])).join('') + '<div class="pcard back" style="opacity:.15"></div>'.repeat(5 - st.board.length);
-    let center = `<div class="info">มือที่ ${st.hand} · ${STREET_NAME[st.street] || ''}</div>
+    let center = `<div class="info">${t('pk.hand', { n: st.hand })} · ${st.street ? t(`pk.s.${st.street}`) : ''}</div>
       <div class="cards">${board}</div>
-      <div class="pot">พอต ${st.pot}</div>`;
+      <div class="pot">${t('pk.pot', { n: st.pot })}</div>`;
     if (st.results) {
       center += `<div class="info">${st.results.map((r) =>
-        `${r.winners.map(name).join(' และ ')} ได้ ${r.amount}${r.hand ? ` ด้วย${r.hand}` : ''}`).join('<br>')}</div>`;
-    } else center += `<div class="info">${escapeHtml(st.log || '')}</div>`;
-    if (st.phase === 'gameover') center = `<div class="pot">🏆 ${name(st.winner)} ชนะเกมนี้!</div><div class="info">เก็บชิปได้ทั้งหมด</div>`;
+        t('pk.won', { names: r.winners.map(name).join(t('pk.and')), n: r.amount }) + (r.hand ? t('pk.with', { hand: { k: r.hand } }) : '')).join('<br>')}</div>`;
+    } else center += `<div class="info">${escapeHtml(tl(st.log))}</div>`;
+    if (st.phase === 'gameover') center = `<div class="pot">${t('pk.champ', { name: name(st.winner) })}</div><div class="info">${t('pk.allChips')}</div>`;
 
     let actions = '';
     if (st.phase === 'play' && myTurn) {
@@ -68,35 +97,35 @@ function onStart(room) {
       const callAmt = Math.min(toCall, me.chips);
       const pot = st.pot;
       const presets = [
-        ['½ พอต', st.currentBet + Math.round((pot + toCall) / 2)],
-        ['พอต', st.currentBet + pot + toCall],
+        [t('pk.halfPot'), st.currentBet + Math.round((pot + toCall) / 2)],
+        [t('pk.potBtn'), st.currentBet + pot + toCall],
       ].map(([l, v]) => [l, Math.max(minTo, Math.min(maxTo, v))]);
-      actions = `<button class="btn" data-act="fold">หมอบ</button>
-        ${toCall <= 0 ? '<button class="btn primary" data-act="check">เช็ค</button>'
-          : `<button class="btn primary" data-act="call">${callAmt >= me.chips ? `คอลออลอิน ${callAmt}` : `คอล ${callAmt}`}</button>`}
+      actions = `<button class="btn" data-act="fold">${t('pk.fold')}</button>
+        ${toCall <= 0 ? `<button class="btn primary" data-act="check">${t('pk.check')}</button>`
+          : `<button class="btn primary" data-act="call">${callAmt >= me.chips ? t('pk.callAll', { n: callAmt }) : t('pk.call', { n: callAmt })}</button>`}
         ${maxTo > st.currentBet ? `
           <span class="actions">
             <input id="raise-to" type="number" min="${minTo}" max="${maxTo}" step="10" value="${minTo}">
-            <button class="btn primary" data-act="raise">${st.currentBet ? 'เรสเป็น' : 'เบท'}</button>
+            <button class="btn primary" data-act="raise">${st.currentBet ? t('pk.raiseTo') : t('pk.betBtn')}</button>
             ${presets.map(([l, v]) => `<button class="btn ghost" data-act="preset" data-to="${v}">${l}</button>`).join('')}
-            <button class="btn" data-act="allin">ออลอิน ${me.chips}</button>
+            <button class="btn" data-act="allin">${t('pk.allinN', { n: me.chips })}</button>
           </span>` : ''}`;
     } else if (st.phase === 'play') {
-      actions = st.toAct ? `<span class="muted">รอ ${name(st.toAct)}...</span>` : '<span class="muted">กำลังเปิดไพ่...</span>';
+      actions = st.toAct ? `<span class="muted">${t('c.waitFor', { name: name(st.toAct) })}</span>` : `<span class="muted">${t('pk.revealing')}</span>`;
     } else if (st.phase === 'handover') {
-      actions = room.isHost ? '<button class="btn primary big" data-act="next">แจกมือต่อไป</button>' : '<span class="muted">รอหัวหน้าห้องแจกมือต่อไป</span>';
+      actions = room.isHost ? `<button class="btn primary big" data-act="next">${t('pk.deal')}</button>` : `<span class="muted">${t('pk.waitDeal')}</span>`;
     } else if (st.phase === 'gameover') {
-      actions = room.isHost ? '<button class="btn primary big" data-act="next">เริ่มเกมใหม่ (ชิปคนละ 1000)</button>' : '<span class="muted">รอหัวหน้าห้องเริ่มเกมใหม่</span>';
+      actions = room.isHost ? `<button class="btn primary big" data-act="next">${t('pk.restart')}</button>` : `<span class="muted">${t('pk.waitRestart')}</span>`;
     }
 
-    const myHand = me.hole?.length ? describe([...me.hole, ...st.board]) : '';
+    const myHand = me.hole?.length ? t(describe([...me.hole, ...st.board])) : '';
     el.innerHTML = `
       <div class="seats">${st.players.filter((p) => p.id !== room.myId).map(seat).join('')}</div>
       <div class="felt">${center}</div>
       <div class="mine ${myTurn ? 'turn' : ''}">
-        <div class="label">ไพ่ของคุณ · 🪙 ${me.chips} ${me.bet ? `· เดิมพัน ${me.bet}` : ''} ${me.id === st.dealerId ? '<span class="badge gold">D</span>' : ''}
-          ${me.folded ? '<span class="badge">หมอบ</span>' : ''}${me.won ? `<span class="badge good">+${me.won}</span>` : ''}</div>
-        <div class="cards">${me.hole?.length ? cardsHTML(me.hole, { size: 'lg' }) : '<span class="muted">ไม่ได้ร่วมมือนี้</span>'}</div>
+        <div class="label">${t('pk.yourCards')} · 🪙 ${me.chips} ${me.bet ? `· ${t('pk.bet', { n: me.bet })}` : ''} ${me.id === st.dealerId ? '<span class="badge gold">D</span>' : ''}
+          ${me.folded ? `<span class="badge">${t('pk.fold')}</span>` : ''}${me.won ? `<span class="badge good">+${me.won}</span>` : ''}</div>
+        <div class="cards">${me.hole?.length ? cardsHTML(me.hole, { size: 'lg' }) : `<span class="muted">${t('pk.sitOut')}</span>`}</div>
         ${myHand ? `<span class="badge">${myHand}</span>` : ''}
         <div class="actions">${actions}</div>
       </div>`;
@@ -152,7 +181,7 @@ function hostLogic(room) {
     S.minRaise = BB;
     S.need = new Set(P.filter(canAct).map((p) => p.id));
     S.toAct = bb;
-    S.log = `มือที่ ${S.hand} · บลายด์ ${SB}/${BB}`;
+    S.log = { k: 'pk.l.hand', p: { n: S.hand, sb: SB, bb: BB } };
     proceed();
   }
 
@@ -228,9 +257,9 @@ function hostLogic(room) {
     if (p.id !== from) return;
     const toCall = S.currentBet - p.bet;
     switch (d.type) {
-      case 'fold': p.folded = true; p.act = 'หมอบ'; break;
-      case 'check': if (toCall > 0) return; p.act = 'เช็ค'; break;
-      case 'call': if (toCall <= 0) return; put(p, toCall); p.act = p.allIn ? 'ออลอิน' : `คอล ${p.bet}`; break;
+      case 'fold': p.folded = true; p.act = { k: 'pk.fold' }; break;
+      case 'check': if (toCall > 0) return; p.act = { k: 'pk.a.check' }; break;
+      case 'call': if (toCall <= 0) return; put(p, toCall); p.act = p.allIn ? { k: 'pk.allin' } : { k: 'pk.a.call', p: { n: p.bet } }; break;
       case 'raise':
       case 'allin': {
         const maxTo = p.bet + p.chips;
@@ -238,14 +267,14 @@ function hostLogic(room) {
         if (to > maxTo) to = maxTo;
         if (to <= S.currentBet) { // all-in that doesn't exceed the bet = call
           if (d.type !== 'allin' || toCall <= 0) return;
-          put(p, toCall); p.act = 'ออลอิน'; break;
+          put(p, toCall); p.act = { k: 'pk.allin' }; break;
         }
         if (to < S.currentBet + S.minRaise && to < maxTo) return;
         const raiseBy = to - S.currentBet;
         if (raiseBy >= S.minRaise) S.minRaise = raiseBy;
         S.currentBet = to;
         put(p, to - p.bet);
-        p.act = p.allIn ? 'ออลอิน' : `${toCall > 0 || S.street === 'preflop' ? 'เรส' : 'เบท'} ${to}`;
+        p.act = p.allIn ? { k: 'pk.allin' } : { k: toCall > 0 || S.street === 'preflop' ? 'pk.a.raise' : 'pk.a.bet', p: { n: to } };
         S.need = new Set(P.filter((x) => canAct(x) && x !== p).map((x) => x.id)); // action reopens
         break;
       }
@@ -293,7 +322,7 @@ function hostLogic(room) {
     if (!p) return;
     p.left = true;
     if (S.phase !== 'play') { finishHandIfNeeded(); return; }
-    if (p.inHand && !p.folded) { p.folded = true; p.act = 'ออกจากเกม'; }
+    if (p.inHand && !p.folded) { p.folded = true; p.act = { k: 'pk.a.left' }; }
     S.need.delete(id);
     const liveCount = P.filter((x) => x.inHand && !x.folded).length;
     if (S.toAct < 0) { if (liveCount === 1) proceed(); else push(); return; } // board is running out

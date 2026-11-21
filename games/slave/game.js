@@ -2,9 +2,35 @@ import { createLobby } from '../../js/lobby.js';
 import { COLORS, escapeHtml } from '../../js/net.js';
 import { newDeck, cardsHTML, cardLabel, backHTML, rankOf } from '../../js/cards.js';
 import { botRunner } from '../../js/bots.js';
+import { t, tl, addStrings, onLang } from '../../js/i18n.js';
+
+addStrings({
+  th: {
+    'sl.t.king': 'คิง 👑', 'sl.t.queen': 'ควีน', 'sl.t.peasant': 'ไพร่', 'sl.t.slave': 'สลาฟ',
+    'sl.cards': '🂠 {n} ใบ', 'sl.done': 'จบแล้ว', 'sl.pass': 'ผ่าน', 'sl.roundOver': 'จบรอบที่ {n}', 'sl.played': '{name} ลง',
+    'sl.newPile': '{name} เริ่มกองใหม่', 'sl.anyCombo': 'ลงได้ทั้งเดี่ยว คู่ ตอง หรือโฟร์', 'sl.next': 'เล่นรอบต่อไป',
+    'sl.waitNext': 'รอหัวหน้าห้องเริ่มรอบต่อไป', 'sl.play': 'ลงไพ่', 'sl.clear': 'ล้าง', 'sl.allOut': 'คุณลงไพ่หมดแล้ว 🎉',
+    'sl.h.three': 'ตาแรก ต้องลงไพ่ที่มี 3♣ ด้วย', 'sl.h.beat': 'ต้องลง {n} ใบ ที่ใหญ่กว่า (3 เล็กสุด, 2 ใหญ่สุด, ♣<♦<♥<♠)',
+    'sl.h.lead': 'คุณได้เริ่มกองใหม่ ลงอะไรก็ได้', 'sl.yourCards': 'ไพ่ของคุณ ({n} ใบ)',
+    'sl.l.notEnough': 'ผู้เล่นไม่พอ', 'sl.x.got': 'แลกไพ่: ได้ {give} จาก {name} · ให้ {back}', 'sl.x.gave': 'แลกไพ่: ให้ {give} แก่ {name} · ได้ {back}',
+    'sl.l.slaveStarts': 'รอบที่ {n}: สลาฟ {name} เริ่มก่อน', 'sl.l.threeStarts': 'รอบที่ {n}: {name} มี 3♣ เริ่มก่อน',
+    'sl.l.newPile': '{name} ได้เริ่มกองใหม่', 'sl.l.passed': '{name} ผ่าน', 'sl.l.out': '{name} ลงหมดแล้ว! ได้เป็น {title}',
+  },
+  en: {
+    'sl.t.king': 'King 👑', 'sl.t.queen': 'Queen', 'sl.t.peasant': 'Peasant', 'sl.t.slave': 'Slave',
+    'sl.cards': '🂠 {n} cards', 'sl.done': 'Out', 'sl.pass': 'Pass', 'sl.roundOver': 'Round {n} over', 'sl.played': '{name} played',
+    'sl.newPile': '{name} starts a new pile', 'sl.anyCombo': 'Play a single, pair, triple or four of a kind', 'sl.next': 'Next round',
+    'sl.waitNext': 'Waiting for the host to start the next round', 'sl.play': 'Play', 'sl.clear': 'Clear', 'sl.allOut': "You're out of cards 🎉",
+    'sl.h.three': 'First turn: your play must include the 3♣', 'sl.h.beat': 'Play {n} card(s) that beat it (3 lowest, 2 highest, ♣<♦<♥<♠)',
+    'sl.h.lead': 'You start a new pile, play anything', 'sl.yourCards': 'Your cards ({n})',
+    'sl.l.notEnough': 'Not enough players', 'sl.x.got': 'Card swap: got {give} from {name} · gave {back}', 'sl.x.gave': 'Card swap: gave {give} to {name} · got {back}',
+    'sl.l.slaveStarts': 'Round {n}: the Slave, {name}, starts', 'sl.l.threeStarts': 'Round {n}: {name} has the 3♣ and starts',
+    'sl.l.newPile': '{name} starts a new pile', 'sl.l.passed': '{name} passed', 'sl.l.out': '{name} is out of cards and becomes {title}!',
+  },
+});
 import { power, sortHand, canBeat, titlesFor, THREE_CLUBS } from './rules.js';
 
-createLobby({ title: '👑 สลาฟ', minPlayers: 2, maxPlayers: 6, bots: true, onStart });
+createLobby({ title: 'g.slave', minPlayers: 2, maxPlayers: 6, bots: true, onStart });
 
 function onStart(room) {
   const el = document.getElementById('table');
@@ -19,6 +45,8 @@ function onStart(room) {
     selected = new Set([...selected].filter((c) => st.hand.includes(c)));
     render();
   });
+
+  onLang(() => st && render());
 
   el.addEventListener('click', (e) => {
     const card = e.target.closest('.mine .pcard.clickable');
@@ -46,47 +74,47 @@ function onStart(room) {
 
     const seat = (p) => `
       <div class="seat ${st.phase === 'play' && st.turn === p.id ? 'turn' : ''} ${p.finished ? 'out' : ''}" style="--pc:${COLORS[p.color % COLORS.length]}">
-        <div class="who"><span class="n">${escapeHtml(p.name)}${p.left ? ' (ออกแล้ว)' : ''}</span>${p.prevTitle ? `<span class="badge">${p.prevTitle}</span>` : ''}</div>
-        <div class="meta"><span>🂠 ${p.count} ใบ</span><span>⭐ ${p.score}</span></div>
-        <div class="cards">${p.finished ? `<span class="badge gold">${p.title || 'จบแล้ว'}</span>`
-          : p.passed ? '<span class="badge">ผ่าน</span>' : backHTML('sm').repeat(Math.min(p.count, 3))}</div>
+        <div class="who"><span class="n">${escapeHtml(p.name)}${p.left ? ` ${t('c.left')}` : ''}</span>${p.prevTitle ? `<span class="badge">${t(p.prevTitle)}</span>` : ''}</div>
+        <div class="meta"><span>${t('sl.cards', { n: p.count })}</span><span>⭐ ${p.score}</span></div>
+        <div class="cards">${p.finished ? `<span class="badge gold">${t(p.title || 'sl.done')}</span>`
+          : p.passed ? `<span class="badge">${t('sl.pass')}</span>` : backHTML('sm').repeat(Math.min(p.count, 3))}</div>
       </div>`;
 
     let center;
     if (st.phase === 'over') {
-      center = `<div class="pot">จบรอบที่ ${st.round}</div><div class="info">${st.order.map((id, i) =>
-        `${i + 1}. ${name(id)} — ${st.players.find((p) => p.id === id)?.title || ''}`).join('<br>')}</div>`;
+      center = `<div class="pot">${t('sl.roundOver', { n: st.round })}</div><div class="info">${st.order.map((id, i) =>
+        `${i + 1}. ${name(id)} — ${t(st.players.find((p) => p.id === id)?.title || '')}`).join('<br>')}</div>`;
     } else if (st.lead) {
-      center = `<div class="info">${name(st.lead.by)} ลง</div><div class="cards">${cardsHTML(st.lead.cards)}</div>`;
+      center = `<div class="info">${escapeHtml(t('sl.played', { name: st.players.find((p) => p.id === st.lead.by)?.name }))}</div><div class="cards">${cardsHTML(st.lead.cards)}</div>`;
     } else {
-      center = `<div class="pot">${name(st.turn)} เริ่มกองใหม่</div><div class="info">ลงได้ทั้งเดี่ยว คู่ ตอง หรือโฟร์</div>`;
+      center = `<div class="pot">${escapeHtml(t('sl.newPile', { name: st.players.find((p) => p.id === st.turn)?.name }))}</div><div class="info">${t('sl.anyCombo')}</div>`;
     }
 
     let actions;
     if (st.phase === 'over') {
-      actions = room.isHost ? '<button class="btn primary big" data-act="next">เล่นรอบต่อไป</button>' : '<span class="muted">รอหัวหน้าห้องเริ่มรอบต่อไป</span>';
+      actions = room.isHost ? `<button class="btn primary big" data-act="next">${t('sl.next')}</button>` : `<span class="muted">${t('sl.waitNext')}</span>`;
     } else if (myTurn) {
-      actions = `<button class="btn primary" data-act="play" ${playable ? '' : 'disabled'}>ลงไพ่${sel.length ? ` (${sel.length})` : ''}</button>
-        <button class="btn" data-act="pass" ${st.lead ? '' : 'disabled'}>ผ่าน</button>
-        ${sel.length ? '<button class="btn ghost" data-act="clear">ล้าง</button>' : ''}`;
+      actions = `<button class="btn primary" data-act="play" ${playable ? '' : 'disabled'}>${t('sl.play')}${sel.length ? ` (${sel.length})` : ''}</button>
+        <button class="btn" data-act="pass" ${st.lead ? '' : 'disabled'}>${t('sl.pass')}</button>
+        ${sel.length ? `<button class="btn ghost" data-act="clear">${t('sl.clear')}</button>` : ''}`;
     } else {
-      actions = st.hand.length ? `<span class="muted">รอ ${name(st.turn)}...</span>` : '<span class="muted">คุณลงไพ่หมดแล้ว 🎉</span>';
+      actions = st.hand.length ? `<span class="muted">${escapeHtml(t('c.waitFor', { name: st.players.find((p) => p.id === st.turn)?.name }))}</span>` : `<span class="muted">${t('sl.allOut')}</span>`;
     }
 
     let hint = '';
     if (myTurn) {
-      if (st.mustThree) hint = 'ตาแรก ต้องลงไพ่ที่มี 3♣ ด้วย';
-      else if (st.lead) hint = `ต้องลง ${st.lead.cards.length} ใบ ที่ใหญ่กว่า (3 เล็กสุด, 2 ใหญ่สุด, ♣<♦<♥<♠)`;
-      else hint = 'คุณได้เริ่มกองใหม่ ลงอะไรก็ได้';
+      if (st.mustThree) hint = t('sl.h.three');
+      else if (st.lead) hint = escapeHtml(t('sl.h.beat', { n: st.lead.cards.length }));
+      else hint = t('sl.h.lead');
     }
 
     el.innerHTML = `
       <div class="seats">${st.players.filter((p) => p.id !== room.myId).map(seat).join('')}</div>
-      <div class="felt">${center}<div class="info">${escapeHtml(st.log || '')}</div></div>
+      <div class="felt">${center}<div class="info">${escapeHtml(tl(st.log))}</div></div>
       <div class="mine ${myTurn ? 'turn' : ''}">
-        <div class="label">ไพ่ของคุณ (${st.hand.length} ใบ) · ⭐ ${st.players.find((p) => p.id === room.myId)?.score ?? 0}
-          ${st.myTitle ? `· <span class="badge gold">${st.myTitle}</span>` : ''}</div>
-        ${st.exchange ? `<div class="log">${escapeHtml(st.exchange)}</div>` : ''}
+        <div class="label">${t('sl.yourCards', { n: st.hand.length })} · ⭐ ${st.players.find((p) => p.id === room.myId)?.score ?? 0}
+          ${st.myTitle ? `· <span class="badge gold">${t(st.myTitle)}</span>` : ''}</div>
+        ${st.exchange ? `<div class="log">${escapeHtml(tl(st.exchange))}</div>` : ''}
         <div class="cards fan">${st.hand.map((c) => cardsHTML([c], { clickable: st.phase === 'play', selected: selected.has(c) })).join('')}</div>
         <div class="log">${hint}</div>
         <div class="actions">${actions}</div>
@@ -109,7 +137,7 @@ function hostLogic(room) {
     // previous standings (only if nobody left)
     const prev = S.order.length && S.players.every((p) => !p.left) ? [...S.order] : null;
     S.players = S.players.filter((p) => !p.left);
-    if (S.players.length < 2) { S.phase = 'over'; S.log = 'ผู้เล่นไม่พอ'; push(); return; }
+    if (S.players.length < 2) { S.phase = 'over'; S.log = { k: 'sl.l.notEnough' }; push(); return; }
     S.round++;
     const titles = titlesFor(S.players.length);
     for (const p of P()) {
@@ -130,19 +158,19 @@ function hostLogic(room) {
         const back = hi.hand.slice(0, n);          // winner gives worst cards
         lo.hand = sortHand(lo.hand.filter((c) => !give.includes(c)).concat(back));
         hi.hand = sortHand(hi.hand.filter((c) => !back.includes(c)).concat(give));
-        hi.exchange = `แลกไพ่: ได้ ${give.map(cardLabel).join(' ')} จาก ${lo.name} · ให้ ${back.map(cardLabel).join(' ')}`;
-        lo.exchange = `แลกไพ่: ให้ ${give.map(cardLabel).join(' ')} แก่ ${hi.name} · ได้ ${back.map(cardLabel).join(' ')}`;
+        hi.exchange = { k: 'sl.x.got', p: { give: give.map(cardLabel).join(' '), name: lo.name, back: back.map(cardLabel).join(' ') } };
+        lo.exchange = { k: 'sl.x.gave', p: { give: give.map(cardLabel).join(' '), name: hi.name, back: back.map(cardLabel).join(' ') } };
       };
       const n = byPlace.length;
       swap(byPlace[0], byPlace[n - 1], 2);
       if (n >= 4) swap(byPlace[1], byPlace[n - 2], 1);
       S.turn = P().indexOf(byPlace[n - 1]); // slave starts
       S.mustThree = false;
-      S.log = `รอบที่ ${S.round}: สลาฟ ${byPlace[n - 1].name} เริ่มก่อน`;
+      S.log = { k: 'sl.l.slaveStarts', p: { n: S.round, name: byPlace[n - 1].name } };
     } else {
       S.turn = P().findIndex((p) => p.hand.includes(THREE_CLUBS));
       S.mustThree = true;
-      S.log = `รอบที่ ${S.round}: ${P()[S.turn].name} มี 3♣ เริ่มก่อน`;
+      S.log = { k: 'sl.l.threeStarts', p: { n: S.round, name: P()[S.turn].name } };
     }
     push();
   }
@@ -166,7 +194,7 @@ function hostLogic(room) {
     for (const p of P()) p.passed = false;
     S.lead = null;
     S.turn = inPlay(P()[leaderIdx]) ? leaderIdx : nextActor(leaderIdx);
-    S.log = `${P()[S.turn].name} ได้เริ่มกองใหม่`;
+    S.log = { k: 'sl.l.newPile', p: { name: P()[S.turn].name } };
     push();
   }
 
@@ -192,7 +220,7 @@ function hostLogic(room) {
     if (d.type === 'pass') {
       if (!S.lead) return;
       p.passed = true;
-      S.log = `${p.name} ผ่าน`;
+      S.log = { k: 'sl.l.passed', p: { name: p.name } };
       advance();
     } else if (d.type === 'play') {
       const cards = Array.isArray(d.cards) ? [...new Set(d.cards)] : [];
@@ -207,7 +235,7 @@ function hostLogic(room) {
         p.finished = true;
         S.order.push(p.id);
         p.title = titlesFor(P().length)[S.order.length - 1];
-        S.log = `${p.name} ลงหมดแล้ว! ได้เป็น ${p.title}`;
+        S.log = { k: 'sl.l.out', p: { name: p.name, title: { k: p.title } } };
       }
       advance();
     }

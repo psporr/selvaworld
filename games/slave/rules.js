@@ -22,14 +22,14 @@ export function canBeat(cards, lead) {
   return cards.length === lead.length && top(cards) > top(lead);
 }
 
+/** Title keys by finishing place (translated with t()). */
 export function titlesFor(n) {
   return {
-    1: ['คิง 👑'],
-    2: ['คิง 👑', 'สลาฟ'],
-    3: ['คิง 👑', 'ไพร่', 'สลาฟ'],
-    4: ['คิง 👑', 'ควีน', 'ไพร่', 'สลาฟ'],
-    5: ['คิง 👑', 'ควีน', 'ไพร่', 'ไพร่', 'สลาฟ'],
-    6: ['คิง 👑', 'ควีน', 'ไพร่', 'ไพร่', 'ไพร่', 'สลาฟ'],
-  }[n]
-    || Array.from({ length: n }, (_, i) => `อันดับ ${i + 1}`);
+    1: ['king'],
+    2: ['king', 'slave'],
+    3: ['king', 'peasant', 'slave'],
+    4: ['king', 'queen', 'peasant', 'slave'],
+    5: ['king', 'queen', 'peasant', 'peasant', 'slave'],
+    6: ['king', 'queen', 'peasant', 'peasant', 'peasant', 'slave'],
+  }[n].map((k) => `sl.t.${k}`);
 }

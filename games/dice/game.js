@@ -1,12 +1,38 @@
 import { createLobby } from '../../js/lobby.js';
 import { COLORS, escapeHtml } from '../../js/net.js';
 import { botRunner } from '../../js/bots.js';
+import { t, tl, addStrings, onLang } from '../../js/i18n.js';
 import { CATS, CAT, ROUNDS, BONUS, BONUS_AT, upperSum, total, bestCategory, botPlan } from './rules.js';
 
-createLobby({ title: '🎲 ยอดลูกเต๋า', minPlayers: 1, maxPlayers: 6, bots: true, onStart });
+addStrings({
+  th: {
+    'dc.c.ones': 'เลข 1', 'dc.c.twos': 'เลข 2', 'dc.c.threes': 'เลข 3', 'dc.c.fours': 'เลข 4', 'dc.c.fives': 'เลข 5', 'dc.c.sixes': 'เลข 6',
+    'dc.c.choice': 'อิสระ', 'dc.c.four': 'โฟร์', 'dc.c.full': 'ฟูลเฮาส์', 'dc.c.small': 'เรียงเล็ก', 'dc.c.large': 'เรียงใหญ่', 'dc.c.yacht': 'ยอด!',
+    'dc.h.choice': 'รวมทุกลูก', 'dc.h.four': 'เหมือนกัน 4 ลูก = รวมทุกลูก', 'dc.h.full': '3+2 = รวมทุกลูก', 'dc.h.small': 'เรียง 4 ลูก = 15',
+    'dc.h.large': 'เรียง 5 ลูก = 30', 'dc.h.yacht': 'เหมือนกัน 5 ลูก = 50',
+    'dc.tie': 'เสมอ! {n} คะแนน 🤝', 'dc.win': '🏆 {name} ชนะ {n} คะแนน!', 'dc.waitRestart': 'รอหัวหน้าห้องเริ่มใหม่',
+    'dc.yourTurn': 'ตาคุณ! กดทอยลูกเต๋า', 'dc.holdOrScore': 'แตะลูกเต๋าเพื่อเก็บไว้ แล้วทอยใหม่ หรือเลือกช่องลงคะแนน',
+    'dc.mustScore': 'ทอยครบแล้ว เลือกช่องลงคะแนน', 'dc.roll': '🎲 ทอย (เหลือ {n})', 'dc.scoreBtn': 'ลง {n} แต้มที่ "{cat}"',
+    'dc.turnOf': 'ตาของ {name}...', 'dc.bonus': 'โบนัส', 'dc.bonusHint': 'เลข 1–6 รวม ≥ {at} ได้ +{b}', 'dc.total': 'รวม',
+    'dc.round': 'รอบที่ {n}/{max}', 'dc.category': 'ช่อง', 'dc.held': 'เก็บ', 'dc.l.scored': '{name} ลง {n} แต้มที่ "{cat}"',
+  },
+  en: {
+    'dc.c.ones': 'Ones', 'dc.c.twos': 'Twos', 'dc.c.threes': 'Threes', 'dc.c.fours': 'Fours', 'dc.c.fives': 'Fives', 'dc.c.sixes': 'Sixes',
+    'dc.c.choice': 'Choice', 'dc.c.four': 'Four of a kind', 'dc.c.full': 'Full house', 'dc.c.small': 'Small straight', 'dc.c.large': 'Large straight', 'dc.c.yacht': 'Yacht!',
+    'dc.h.choice': 'Sum of all dice', 'dc.h.four': '4 alike = sum of all dice', 'dc.h.full': '3+2 = sum of all dice', 'dc.h.small': '4 in a row = 15',
+    'dc.h.large': '5 in a row = 30', 'dc.h.yacht': '5 alike = 50',
+    'dc.tie': "It's a tie at {n} points! 🤝", 'dc.win': '🏆 {name} wins with {n} points!', 'dc.waitRestart': 'Waiting for the host to restart',
+    'dc.yourTurn': 'Your turn! Roll the dice', 'dc.holdOrScore': 'Tap dice to keep them, then roll again, or pick a category to score',
+    'dc.mustScore': 'No rolls left, pick a category to score', 'dc.roll': '🎲 Roll ({n} left)', 'dc.scoreBtn': 'Score {n} in "{cat}"',
+    'dc.turnOf': "{name}'s turn...", 'dc.bonus': 'Bonus', 'dc.bonusHint': 'Ones–Sixes total ≥ {at}: +{b}', 'dc.total': 'Total',
+    'dc.round': 'Round {n}/{max}', 'dc.category': 'Category', 'dc.held': 'Keep', 'dc.l.scored': '{name} scored {n} in "{cat}"',
+  },
+});
+
+createLobby({ title: 'g.dice', minPlayers: 1, maxPlayers: 6, bots: true, onStart });
 
 const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
-const dieHTML = (v, i, cls = '') => `<div class="die ${cls}" data-i="${i}">${Array.from({ length: 9 }, (_, k) => `<i class="${PIPS[v]?.includes(k) ? 'on' : ''}"></i>`).join('')}</div>`;
+const dieHTML = (v, i, cls = '') => `<div class="die ${cls}" data-i="${i}" data-held="${t('dc.held')}">${Array.from({ length: 9 }, (_, k) => `<i class="${PIPS[v]?.includes(k) ? 'on' : ''}"></i>`).join('')}</div>`;
 
 function onStart(room) {
   const el = document.getElementById('table');
@@ -24,6 +50,8 @@ function onStart(room) {
     window.__st = m;
     render(rolled);
   });
+
+  onLang(() => st && render(false));
 
   el.addEventListener('click', (e) => {
     if (!st) return;
@@ -52,17 +80,17 @@ function onStart(room) {
       const ranked = [...st.players].sort((a, b) => total(st.cards[b.id]) - total(st.cards[a.id]));
       const top = total(st.cards[ranked[0].id]);
       const tie = ranked.filter((p) => total(st.cards[p.id]) === top).length > 1;
-      status = tie ? `เสมอ! ${top} คะแนน 🤝` : `🏆 ${escapeHtml(ranked[0].name)} ชนะ ${top} คะแนน!`;
-      actions = room.isHost ? '<button class="btn primary" data-act="again">เล่นอีกครั้ง</button>' : '<span class="muted">รอหัวหน้าห้องเริ่มใหม่</span>';
+      status = tie ? t('dc.tie', { n: top }) : escapeHtml(t('dc.win', { name: ranked[0].name, n: top }));
+      actions = room.isHost ? `<button class="btn primary" data-act="again">${t('c.again')}</button>` : `<span class="muted">${t('dc.waitRestart')}</span>`;
     } else if (mine) {
-      status = fresh ? 'ตาคุณ! กดทอยลูกเต๋า' : st.rollsLeft ? 'แตะลูกเต๋าเพื่อเก็บไว้ แล้วทอยใหม่ หรือเลือกช่องลงคะแนน' : 'ทอยครบแล้ว เลือกช่องลงคะแนน';
-      actions = `<button class="btn primary" data-act="roll" ${st.rollsLeft ? '' : 'disabled'}>🎲 ทอย (เหลือ ${st.rollsLeft})</button>`;
-      if (pending) actions += `<button class="btn" data-act="score">ลง ${CAT[pending].score(st.dice)} แต้มที่ "${CAT[pending].name}"</button>`;
+      status = fresh ? t('dc.yourTurn') : st.rollsLeft ? t('dc.holdOrScore') : t('dc.mustScore');
+      actions = `<button class="btn primary" data-act="roll" ${st.rollsLeft ? '' : 'disabled'}>${t('dc.roll', { n: st.rollsLeft })}</button>`;
+      if (pending) actions += `<button class="btn" data-act="score">${t('dc.scoreBtn', { n: CAT[pending].score(st.dice), cat: { k: `dc.c.${pending}` } })}</button>`;
     } else {
-      status = `ตาของ ${escapeHtml(cur?.name || '')}${cur?.bot ? ' 🤖' : ''}...`;
+      status = escapeHtml(t('dc.turnOf', { name: cur?.name || '' }));
     }
 
-    const head = st.players.map((p) => `<th class="${p.id === st.turn && !st.over ? 'turn' : ''}" style="--pc:${COLORS[p.color % COLORS.length]}">${p.bot ? '🤖' : ''}${escapeHtml(p.name)}${p.id === room.myId ? '<br><small>(คุณ)</small>' : ''}</th>`).join('');
+    const head = st.players.map((p) => `<th class="${p.id === st.turn && !st.over ? 'turn' : ''}" style="--pc:${COLORS[p.color % COLORS.length]}">${p.bot ? '🤖' : ''}${escapeHtml(p.name)}${p.id === room.myId ? `<br><small>${t('c.you')}</small>` : ''}</th>`).join('');
     const cell = (p, c) => {
       const v = st.cards[p.id][c.id];
       if (v != null) return `<td class="filled">${v}</td>`;
@@ -72,24 +100,24 @@ function onStart(room) {
       }
       return '<td></td>';
     };
-    const row = (c) => `<tr><td>${c.name}${c.hint ? `<small>${c.hint}</small>` : ''}</td>${st.players.map((p) => cell(p, c)).join('')}</tr>`;
+    const row = (c) => `<tr><td>${t(`dc.c.${c.id}`)}${c.upper ? '' : `<small>${t(`dc.h.${c.id}`)}</small>`}</td>${st.players.map((p) => cell(p, c)).join('')}</tr>`;
     const upper = CATS.filter((c) => c.upper).map(row).join('');
-    const bonus = `<tr><td>โบนัส<small>เลข 1–6 รวม ≥ ${BONUS_AT} ได้ +${BONUS}</small></td>${st.players.map((p) => {
+    const bonus = `<tr><td>${t('dc.bonus')}<small>${t('dc.bonusHint', { at: BONUS_AT, b: BONUS })}</small></td>${st.players.map((p) => {
       const u = upperSum(st.cards[p.id]);
       return `<td>${u >= BONUS_AT ? `+${BONUS}` : `<small>${u}/${BONUS_AT}</small>`}</td>`;
     }).join('')}</tr>`;
     const lower = CATS.filter((c) => !c.upper).map(row).join('');
-    const sum = `<tr class="sum"><td>รวม</td>${st.players.map((p) => `<td>${total(st.cards[p.id])}</td>`).join('')}</tr>`;
+    const sum = `<tr class="sum"><td>${t('dc.total')}</td>${st.players.map((p) => `<td>${total(st.cards[p.id])}</td>`).join('')}</tr>`;
 
     el.innerHTML = `
       <div class="tray">
-        <div class="muted">รอบที่ ${Math.min(st.round, ROUNDS)}/${ROUNDS}</div>
+        <div class="muted">${t('dc.round', { n: Math.min(st.round, ROUNDS), max: ROUNDS })}</div>
         <div class="dice">${dice}</div>
         <div class="status">${status}</div>
         <div class="row">${actions}</div>
-        ${st.log ? `<div class="muted">${escapeHtml(st.log)}</div>` : ''}
+        ${st.log ? `<div class="muted">${escapeHtml(tl(st.log))}</div>` : ''}
       </div>
-      <div class="card-wrap"><table class="card"><thead><tr><th>ช่อง</th>${head}</tr></thead>
+      <div class="card-wrap"><table class="card"><thead><tr><th>${t('dc.category')}</th>${head}</tr></thead>
         <tbody>${upper}${bonus}${lower}${sum}</tbody></table></div>`;
   }
 
@@ -141,7 +169,7 @@ function hostLogic(room) {
     } else if (d.type === 'score' && S.rollsLeft < 3 && CAT[d.cat] && S.cards[from][d.cat] == null) {
       const v = CAT[d.cat].score(S.dice);
       S.cards[from][d.cat] = v;
-      S.log = `${name} ลง ${v} แต้มที่ "${CAT[d.cat].name}"`;
+      S.log = { k: 'dc.l.scored', p: { name, n: v, cat: { k: `dc.c.${d.cat}` } } };
       nextTurn();
     } else return;
     push();

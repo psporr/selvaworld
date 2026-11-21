@@ -1,12 +1,48 @@
 import { createLobby, playerItems } from '../../js/lobby.js';
 import { COLORS, escapeHtml } from '../../js/net.js';
 import { botRunner } from '../../js/bots.js';
+import { t as T, tl, addStrings, onLang } from '../../js/i18n.js';
+
+addStrings({
+  th: {
+    'tc.c.knight': 'อัศวิน', 'tc.c.archer': 'นักธนู', 'tc.c.mage': 'จอมเวท',
+    'tc.n.knight': 'ถึก ตีระยะประชิด', 'tc.n.archer': 'ยิงไกล 2–3 ช่อง ตีประชิดไม่ได้', 'tc.n.mage': 'เวทลดเกราะศัตรูครึ่งหนึ่ง',
+    'tc.t.plain': 'ทุ่งหญ้า', 'tc.t.forest': 'ป่า', 'tc.t.rock': 'หิน', 'tc.t.water': 'น้ำ',
+    'tc.hp': 'HP', 'tc.atk': 'โจมตี', 'tc.def': 'เกราะ', 'tc.mov': 'เดิน', 'tc.range': 'ระยะ {r} ช่อง', 'tc.inTerrain': ' · ยืนใน{terr} เกราะ +{n}',
+    'tc.draw': 'เสมอ!', 'tc.yourTurn': '⚔️ ตาของคุณ', 'tc.round': 'รอบที่ {n}/{max}', 'tc.forecast': 'พยากรณ์การต่อสู้',
+    'tc.kill': '💥 กำจัดได้!', 'tc.counter': 'ศัตรูโต้กลับ −{n}', 'tc.youDie': ' (ตัวเราจะตาย!)', 'tc.noCounter': 'ศัตรูโต้กลับไม่ได้',
+    'tc.confirm': 'ยืนยันโจมตี', 'tc.choose': 'เลือกการกระทำ', 'tc.tapEnemy': 'แตะศัตรูที่มีกรอบแดงเพื่อดูผลก่อนโจมตี',
+    'tc.noTarget': 'ไม่มีศัตรูในระยะจากจุดนี้', 'tc.wait': 'รอ (ไม่โจมตี)', 'tc.tapMove': 'แตะช่องสีฟ้าเพื่อเดิน (แตะตัวเองเพื่ออยู่กับที่)',
+    'tc.tapUnit': 'แตะยูนิตของคุณเพื่อสั่งการ · เหลือ {n} ตัวที่ยังไม่ได้เดิน', 'tc.endConfirm': 'ยืนยันจบเทิร์น? ยังมียูนิตเหลือ',
+    'tc.end': 'จบเทิร์น', 'tc.hideThreat': 'ซ่อนเขตอันตราย', 'tc.threat': '⚠️ เขตอันตราย', 'tc.again': 'เล่นอีกครั้ง (แผนที่ใหม่)',
+    'tc.waitRestart': 'รอหัวหน้าห้องเริ่มเกมใหม่',
+    'tc.l.start': 'เริ่มศึก! {name} เดินก่อน', 'tc.l.win': '{name} ชนะ!', 'tc.l.none': 'ไม่มีใครรอด', 'tc.l.timeout': 'ครบ {n} รอบ! ตัดสินจาก HP รวม',
+    'tc.l.turn': '— ตาของ {name} —', 'tc.l.attack': '{a} {name} โจมตี {b} {target} −{n}', 'tc.l.ko': ' 💥 ล้ม!', 'tc.l.counter': ' · โต้กลับ −{n}',
+    'tc.l.left': '{name} ออกจากเกม',
+  },
+  en: {
+    'tc.c.knight': 'Knight', 'tc.c.archer': 'Archer', 'tc.c.mage': 'Mage',
+    'tc.n.knight': 'Tough, melee only', 'tc.n.archer': 'Shoots 2–3 tiles, cannot hit adjacent', 'tc.n.mage': "Magic halves the target's armor",
+    'tc.t.plain': 'Grass', 'tc.t.forest': 'Forest', 'tc.t.rock': 'Rock', 'tc.t.water': 'Water',
+    'tc.hp': 'HP', 'tc.atk': 'Attack', 'tc.def': 'Armor', 'tc.mov': 'Move', 'tc.range': 'Range {r}', 'tc.inTerrain': ' · in {terr}: armor +{n}',
+    'tc.draw': 'Draw!', 'tc.yourTurn': '⚔️ Your turn', 'tc.round': 'Round {n}/{max}', 'tc.forecast': 'Battle forecast',
+    'tc.kill': '💥 Defeats the target!', 'tc.counter': 'Counterattack −{n}', 'tc.youDie': ' (your unit falls!)', 'tc.noCounter': "The enemy can't counter",
+    'tc.confirm': 'Confirm attack', 'tc.choose': 'Choose an action', 'tc.tapEnemy': 'Tap an enemy outlined in red to preview the attack',
+    'tc.noTarget': 'No enemies in range from here', 'tc.wait': "Wait (don't attack)", 'tc.tapMove': 'Tap a blue tile to move (tap the unit to stay put)',
+    'tc.tapUnit': 'Tap one of your units to give orders · {n} still to move', 'tc.endConfirm': 'End turn? Some units still have orders',
+    'tc.end': 'End turn', 'tc.hideThreat': 'Hide danger zone', 'tc.threat': '⚠️ Danger zone', 'tc.again': 'Play again (new map)',
+    'tc.waitRestart': 'Waiting for the host to start a new game',
+    'tc.l.start': 'Battle begins! {name} moves first', 'tc.l.win': '{name} wins!', 'tc.l.none': 'Nobody survived', 'tc.l.timeout': '{n} rounds reached! Decided by total HP',
+    'tc.l.turn': "— {name}'s turn —", 'tc.l.attack': "{a} {name} attacks {b} {target} −{n}", 'tc.l.ko': ' 💥 defeated!', 'tc.l.counter': ' · counter −{n}',
+    'tc.l.left': '{name} left the game',
+  },
+});
 import {
   CLASSES, TERRAIN, MAX_ROUNDS, key, alive, unitAt, tileAt, reachable, targetsFrom, forecast, threatTiles,
   makeBattle, botAction,
 } from './rules.js';
 
-createLobby({ title: '⚔️ สนามยุทธ์', minPlayers: 2, maxPlayers: 6, bots: true, onStart });
+createLobby({ title: 'g.tactics', minPlayers: 2, maxPlayers: 6, bots: true, onStart });
 
 const TERR_ICON = { F: '🌲', R: '🪨', W: '🌊' };
 
@@ -129,7 +165,7 @@ function onStart(room) {
           inner = `<div class="unit ${u.acted && u.owner === st.turn && !st.over ? 'done' : ''} ${ghost ? 'ghost' : ''}" style="--pc:${color(u.owner)}">
             ${CLASSES[u.cls].icon}<span class="hp"><i class="${pct < 0.34 ? 'low' : pct < 0.67 ? 'mid' : ''}" style="width:${pct * 100}%"></i></span></div>`;
         }
-        html += `<div class="cell ${cls.join(' ')}" data-x="${x}" data-y="${y}" title="${TERRAIN[t].name}">${inner}</div>`;
+        html += `<div class="cell ${cls.join(' ')}" data-x="${x}" data-y="${y}" title="${T(TERRAIN[t].name)}">${inner}</div>`;
       }
     }
     boardEl.innerHTML = html;
@@ -140,9 +176,9 @@ function onStart(room) {
     const c = CLASSES[u.cls];
     const terr = TERRAIN[tileAt(st, u.x, u.y)];
     return `<div class="box" style="border-left:4px solid ${color(u.owner)}">
-      <h4>${c.icon} ${c.name} · <span class="muted">${nameOf(u.owner)}</span></h4>
-      <div class="stats"><div>HP<b>${u.hp}/${c.hp}</b></div><div>โจมตี<b>${c.atk}</b></div><div>เกราะ<b>${c.def}${terr.def ? `+${terr.def}` : ''}</b></div><div>เดิน<b>${c.mov}</b></div></div>
-      <div class="muted" style="font-size:.85rem">ระยะ ${c.min === c.max ? c.min : `${c.min}–${c.max}`} ช่อง · ${c.note}${terr.def ? ` · ยืนใน${terr.name} เกราะ +${terr.def}` : ''}</div>
+      <h4>${c.icon} ${T(c.name)} · <span class="muted">${nameOf(u.owner)}</span></h4>
+      <div class="stats"><div>${T('tc.hp')}<b>${u.hp}/${c.hp}</b></div><div>${T('tc.atk')}<b>${c.atk}</b></div><div>${T('tc.def')}<b>${c.def}${terr.def ? `+${terr.def}` : ''}</b></div><div>${T('tc.mov')}<b>${c.mov}</b></div></div>
+      <div class="muted" style="font-size:.85rem">${T('tc.range', { r: c.min === c.max ? c.min : `${c.min}–${c.max}` })} · ${T(c.note)}${terr.def ? T('tc.inTerrain', { terr: { k: terr.name }, n: terr.def }) : ''}</div>
     </div>`;
   }
 
@@ -150,9 +186,9 @@ function onStart(room) {
     const turnName = nameOf(st.turn);
     const counts = (owner) => alive(st).filter((u) => u.owner === owner);
     let out = `<div class="banner">${st.over
-      ? (st.winner ? `🏆 ${nameOf(st.winner)} ชนะ!` : 'เสมอ!')
-      : myTurn() ? '⚔️ ตาของคุณ' : `รอ ${turnName}...`}</div>
-      <div class="muted" style="text-align:center">รอบที่ ${Math.min(st.round, MAX_ROUNDS)}/${MAX_ROUNDS}</div>
+      ? (st.winner ? T('c.wins', { name: nameOf(st.winner) }) : T('tc.draw'))
+      : myTurn() ? T('tc.yourTurn') : T('c.waitFor', { name: turnName })}</div>
+      <div class="muted" style="text-align:center">${T('tc.round', { n: Math.min(st.round, MAX_ROUNDS), max: MAX_ROUNDS })}</div>
       <ul class="players">${playerItems(st.players, room.myId, (p) => {
         const us = counts(p.id);
         return `<span class="score">${us.length ? us.map((u) => CLASSES[u.cls].icon).join('') : '💀'}</span>`;
@@ -163,24 +199,24 @@ function onStart(room) {
       if (s && stage && aim) {
         const t = unit(aim);
         const f = forecast(st, s, stage, t);
-        out += `<div class="box actionbox"><h4>พยากรณ์การต่อสู้</h4>
+        out += `<div class="box actionbox"><h4>${T('tc.forecast')}</h4>
           <div class="fc">
             <div>${CLASSES[s.cls].icon}<br>HP ${s.hp} → <b>${s.hp - f.counter}</b></div>
             <div class="big dmg">−${f.dmg}</div>
             <div>${CLASSES[t.cls].icon}<br>HP ${t.hp} → <b>${t.hp - f.dmg}</b></div>
           </div>
-          <div class="muted" style="text-align:center">${f.kill ? '💥 กำจัดได้!' : f.counter ? `ศัตรูโต้กลับ −${f.counter}${f.die ? ' (ตัวเราจะตาย!)' : ''}` : 'ศัตรูโต้กลับไม่ได้'}</div>
-          <div class="row2"><button class="btn primary" data-act="attack">ยืนยันโจมตี</button><button class="btn ghost" data-act="cancel">ยกเลิก</button></div></div>`;
+          <div class="muted" style="text-align:center">${f.kill ? T('tc.kill') : f.counter ? T('tc.counter', { n: f.counter }) + (f.die ? T('tc.youDie') : '') : T('tc.noCounter')}</div>
+          <div class="row2"><button class="btn primary" data-act="attack">${T('tc.confirm')}</button><button class="btn ghost" data-act="cancel">${T('c.cancel')}</button></div></div>`;
       } else if (s && stage) {
-        out += `<div class="box actionbox"><h4>${CLASSES[s.cls].icon} เลือกการกระทำ</h4>
-          <div class="muted">${targets.length ? 'แตะศัตรูที่มีกรอบแดงเพื่อดูผลก่อนโจมตี' : 'ไม่มีศัตรูในระยะจากจุดนี้'}</div>
-          <div class="row2"><button class="btn" data-act="wait">รอ (ไม่โจมตี)</button><button class="btn ghost" data-act="cancel">ยกเลิก</button></div></div>`;
+        out += `<div class="box actionbox"><h4>${CLASSES[s.cls].icon} ${T('tc.choose')}</h4>
+          <div class="muted">${targets.length ? T('tc.tapEnemy') : T('tc.noTarget')}</div>
+          <div class="row2"><button class="btn" data-act="wait">${T('tc.wait')}</button><button class="btn ghost" data-act="cancel">${T('c.cancel')}</button></div></div>`;
       } else if (s) {
-        out += `<div class="box actionbox"><h4>${CLASSES[s.cls].icon} ${CLASSES[s.cls].name}</h4><div class="muted">แตะช่องสีฟ้าเพื่อเดิน (แตะตัวเองเพื่ออยู่กับที่)</div>
-          <div class="row2"><button class="btn ghost" data-act="cancel">ยกเลิก</button></div></div>`;
+        out += `<div class="box actionbox"><h4>${CLASSES[s.cls].icon} ${T(CLASSES[s.cls].name)}</h4><div class="muted">${T('tc.tapMove')}</div>
+          <div class="row2"><button class="btn ghost" data-act="cancel">${T('c.cancel')}</button></div></div>`;
       } else {
         const left = alive(st).filter((u) => u.owner === room.myId && !u.acted).length;
-        out += `<div class="box"><div class="muted">แตะยูนิตของคุณเพื่อสั่งการ · เหลือ ${left} ตัวที่ยังไม่ได้เดิน</div></div>`;
+        out += `<div class="box"><div class="muted">${T('tc.tapUnit', { n: left })}</div></div>`;
       }
     }
 
@@ -188,17 +224,18 @@ function onStart(room) {
     if (shown && shown.hp > 0 && !(aim && shown.id === aim)) out += statBox(shown);
 
     out += '<div class="row2">';
-    if (myTurn()) out += `<button class="btn ${endConfirm ? 'primary' : ''}" data-act="end">${endConfirm ? 'ยืนยันจบเทิร์น? ยังมียูนิตเหลือ' : 'จบเทิร์น'}</button>`;
-    if (!st.over) out += `<button class="btn ghost" data-act="threat">${threat ? 'ซ่อนเขตอันตราย' : '⚠️ เขตอันตราย'}</button>`;
-    if (st.over && room.isHost) out += '<button class="btn primary big" data-act="again">เล่นอีกครั้ง (แผนที่ใหม่)</button>';
+    if (myTurn()) out += `<button class="btn ${endConfirm ? 'primary' : ''}" data-act="end">${endConfirm ? T('tc.endConfirm') : T('tc.end')}</button>`;
+    if (!st.over) out += `<button class="btn ghost" data-act="threat">${threat ? T('tc.hideThreat') : T('tc.threat')}</button>`;
+    if (st.over && room.isHost) out += `<button class="btn primary big" data-act="again">${T('tc.again')}</button>`;
     out += '</div>';
-    if (st.over && !room.isHost) out += '<p class="muted" style="text-align:center">รอหัวหน้าห้องเริ่มเกมใหม่</p>';
-    out += `<div class="log">${st.log.slice(-30).reverse().map((l) => `<div>${escapeHtml(l)}</div>`).join('')}</div>`;
+    if (st.over && !room.isHost) out += `<p class="muted" style="text-align:center">${T('tc.waitRestart')}</p>`;
+    out += `<div class="log">${st.log.slice(-30).reverse().map((l) => `<div>${escapeHtml(tl(l))}</div>`).join('')}</div>`;
     panel.innerHTML = out;
     if (turnIdx >= 0 && !st.over) panel.querySelectorAll('.players li')[turnIdx]?.classList.add('turn');
   }
 
   window.addEventListener('resize', () => st && render());
+  onLang(() => st && render());
   if (room.isHost) hostNext = hostLogic(room);
 }
 
@@ -211,13 +248,13 @@ function hostLogic(room) {
   function newGame() {
     const players = room.players.map(({ id, name: n, color, bot }) => ({ id, name: n, color, bot: !!bot }));
     S = { ...makeBattle(players.map((p) => p.id)), players, turn: players[0].id, round: 1, over: false, winner: null, log: [] };
-    S.log.push(`เริ่มศึก! ${players[0].name} เดินก่อน`);
+    S.log.push({ k: 'tc.l.start', p: { name: players[0].name } });
     push();
   }
 
   function checkOver() {
     const o = owners();
-    if (o.length <= 1) { S.over = true; S.winner = o[0] ?? null; S.log.push(S.winner ? `${name(S.winner)} ชนะ!` : 'ไม่มีใครรอด'); return true; }
+    if (o.length <= 1) { S.over = true; S.winner = o[0] ?? null; S.log.push(S.winner ? { k: 'tc.l.win', p: { name: name(S.winner) } } : { k: 'tc.l.none' }); return true; }
     return false;
   }
 
@@ -234,12 +271,12 @@ function hostLogic(room) {
         const ranked = o.sort((a, b) => hp(b) - hp(a));
         S.over = true;
         S.winner = hp(ranked[0]) > hp(ranked[1]) ? ranked[0] : null;
-        S.log.push(`ครบ ${MAX_ROUNDS} รอบ! ตัดสินจาก HP รวม`);
+        S.log.push({ k: 'tc.l.timeout', p: { n: MAX_ROUNDS } });
         return;
       }
       S.turn = order[i];
       for (const u of S.units) if (u.owner === S.turn) u.acted = false;
-      S.log.push(`— ตาของ ${name(S.turn)} —`);
+      S.log.push({ k: 'tc.l.turn', p: { name: name(S.turn) } });
       return;
     }
   }
@@ -261,7 +298,9 @@ function hostLogic(room) {
       const f = forecast(S, u, [u.x, u.y], t);
       t.hp -= f.dmg;
       u.hp -= f.counter;
-      S.log.push(`${c.icon} ${name(from)} โจมตี ${CLASSES[t.cls].icon} ${name(t.owner)} −${f.dmg}${f.kill ? ' 💥 ล้ม!' : ''}${f.counter ? ` · โต้กลับ −${f.counter}${f.die ? ' 💥 ล้ม!' : ''}` : ''}`);
+      S.log.push([{ k: 'tc.l.attack', p: { a: c.icon, name: name(from), b: CLASSES[t.cls].icon, target: name(t.owner), n: f.dmg } },
+        ...(f.kill ? [{ k: 'tc.l.ko' }] : []),
+        ...(f.counter ? [{ k: 'tc.l.counter', p: { n: f.counter } }, ...(f.die ? [{ k: 'tc.l.ko' }] : [])] : [])]);
     }
     if (checkOver()) return push();
     if (!alive(S).some((x) => x.owner === from && !x.acted)) nextTurn();
@@ -280,7 +319,7 @@ function hostLogic(room) {
   room.on('leave', (id) => {
     if (!S) return;
     for (const u of S.units) if (u.owner === id) u.hp = 0;
-    S.log.push(`${name(id)} ออกจากเกม`);
+    S.log.push({ k: 'tc.l.left', p: { name: name(id) } });
     if (!S.over && !checkOver() && S.turn === id) nextTurn();
     push();
   });

@@ -1,5 +1,6 @@
 import { createLobby, playerItems } from '../../js/lobby.js';
 import { escapeHtml } from '../../js/net.js';
+import { t, addStrings, onLang } from '../../js/i18n.js';
 import { SIZE, ROUND_SECONDS, mulberry32, newBoard, play, findMoves, adjacent, botMove } from './rules.js';
 
 const GEMS = ['💎', '🍀', '🔥', '⭐', '🍇', '🌙'];
@@ -7,7 +8,20 @@ const BG = ['#1e40af', '#166534', '#991b1b', '#a16207', '#6b21a8', '#334155'];
 const COUNTDOWN = 3;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-createLobby({ title: '💎 เพชรเรียงสาม', minPlayers: 1, maxPlayers: 6, bots: true, onStart });
+addStrings({
+  th: {
+    'gm.waitStart': 'รอเริ่ม...', 'gm.secsLeft': 'วินาทีที่เหลือ', 'gm.yourScore': 'คะแนนของคุณ', 'gm.rank': 'อันดับ',
+    'gm.help': 'สลับเพชรที่อยู่ติดกันให้เรียง 3 ตัวขึ้นไป แตะทีละสองเม็ดหรือปัดก็ได้ เรียงต่อเนื่องได้คอมโบคูณคะแนน ทุกคนเริ่มจากกระดานเดียวกัน',
+    'gm.ready': 'เตรียมตัว!', 'gm.timeUp': 'หมดเวลา! รอสรุปผล...', 'gm.combo': 'คอมโบ x{n}!',
+  },
+  en: {
+    'gm.waitStart': 'Waiting to start...', 'gm.secsLeft': 'seconds left', 'gm.yourScore': 'Your score', 'gm.rank': 'Ranking',
+    'gm.help': 'Swap neighbouring gems to line up 3 or more. Tap two gems or swipe. Chain reactions multiply your points. Everyone starts from the same board.',
+    'gm.ready': 'Get ready!', 'gm.timeUp': "Time's up! Tallying scores...", 'gm.combo': 'Combo x{n}!',
+  },
+});
+
+createLobby({ title: 'g.gems', minPlayers: 1, maxPlayers: 6, bots: true, onStart });
 
 function onStart(room) {
   const boardEl = document.getElementById('board');
@@ -29,6 +43,9 @@ function onStart(room) {
   let lastAction = 0;
   let hint = null;
   let ranking = [];
+  let coverFn = null; // current overlay text, re-rendered on language change
+  const setCover = (fn) => { coverFn = fn; cover.hidden = !fn; if (fn) cover.innerHTML = fn(); };
+  onLang(() => { if (coverFn) setCover(coverFn); renderList(); });
 
   function draw(pop = null) {
     boardEl.innerHTML = board.map((k, i) => {
@@ -59,8 +76,8 @@ function onStart(room) {
       renderList();
       phase = 'countdown';
       (async () => {
-        for (let n = COUNTDOWN; n > 0; n--) { cover.hidden = false; cover.innerHTML = `<div><div class="n">${n}</div>เตรียมตัว!</div>`; await wait(1000); }
-        cover.hidden = true;
+        for (let n = COUNTDOWN; n > 0; n--) { setCover(() => `<div><div class="n">${n}</div>${t('gm.ready')}</div>`); await wait(1000); }
+        setCover(null);
         phase = 'play';
         deadline = performance.now() + ROUND_SECONDS * 1000;
         lastAction = performance.now();
@@ -75,8 +92,7 @@ function onStart(room) {
       renderList();
       const top = m.scores[0];
       const tie = m.scores.filter((p) => p.score === top.score).length > 1;
-      cover.hidden = false;
-      cover.innerHTML = `<div>${tie ? 'เสมอ! 🤝' : `🏆 ${escapeHtml(top.name)} ชนะ!`}<br><small class="muted">${top.score} คะแนน${room.isHost ? '' : ' · รอหัวหน้าห้องเริ่มรอบใหม่'}</small></div>`;
+      setCover(() => `<div>${tie ? t('c.tie') : escapeHtml(t('c.wins', { name: top.name }))}<br><small class="muted">${t('c.points', { n: top.score })}${room.isHost ? '' : ` · ${t('c.waitHostAgain')}`}</small></div>`);
       if (room.isHost) again.hidden = false;
     }
     window.__st = { phase, score, round, ranking };
@@ -88,7 +104,7 @@ function onStart(room) {
     const left = Math.max(0, Math.ceil((deadline - performance.now()) / 1000));
     timerEl.textContent = left;
     timerEl.classList.toggle('low', left <= 10);
-    if (left === 0) { phase = 'done'; sel = -1; hint = null; draw(); cover.hidden = false; cover.textContent = 'หมดเวลา! รอสรุปผล...'; }
+    if (left === 0) { phase = 'done'; sel = -1; hint = null; draw(); setCover(() => t('gm.timeUp')); }
     else if (!busy && !hint && performance.now() - lastAction > 7000) { hint = findMoves(board)[0]; draw(); }
   }, 250);
 
@@ -109,7 +125,7 @@ function onStart(room) {
     await wait(130);
     for (const s of r.steps) {
       draw(new Set(s.cleared));
-      if (s.combo > 1) { comboEl.textContent = `คอมโบ x${s.combo}!`; comboEl.classList.add('show'); }
+      if (s.combo > 1) { comboEl.textContent = t('gm.combo', { n: s.combo }); comboEl.classList.add('show'); }
       await wait(210);
       board = s.board;
       draw();

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>นิ้วไว · Selva World</title>
+  <title data-i18n="g.reaction" data-i18n-after=" · Selva World">Selva World</title>
   <link rel="stylesheet" href="../../css/style.css">
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
@@ -24,16 +24,16 @@
   </style>
 </head>
 <body>
-  <header class="topbar"><a class="back" href="../../">← หน้าหลัก</a><h1>⚡ นิ้วไว</h1></header>
+  <header class="topbar"><a class="back" href="../../" data-i18n="c.home">← หน้าหลัก</a><h1>⚡ <span data-i18n="g.reaction">นิ้วไว</span></h1></header>
   <main>
     <section id="lobby"></section>
     <section id="game" hidden>
       <div class="game-layout">
-        <div id="pad" class="idle"><div class="big">เตรียมตัว...</div><div class="small">แตะ/คลิก หรือกด Space เมื่อจอเป็นสีเขียว</div></div>
+        <div id="pad" class="idle"><div class="big" data-i18n="rx.ready"></div><div class="small" data-i18n="rx.howto"></div></div>
         <aside class="side">
-          <h3>คะแนน</h3>
+          <h3 data-i18n="rx.score"></h3>
           <ul class="players" id="board"></ul>
-          <button id="again" class="btn primary" hidden>เล่นอีกครั้ง</button>
+          <button id="again" class="btn primary" hidden data-i18n="c.again"></button>
         </aside>
       </div>
     </section>

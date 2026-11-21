@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ยอดลูกเต๋า · Selva World</title>
+  <title data-i18n="g.dice" data-i18n-after=" · Selva World">Selva World</title>
   <link rel="stylesheet" href="../../css/style.css">
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
@@ -16,7 +16,7 @@
     .die i { border-radius: 50%; }
     .die i.on { background: #1d1b26; }
     .die.held { transform: translateY(-8px); box-shadow: 0 0 0 3px var(--accent2), 0 10px 16px #0008; }
-    .die.held::after { content: 'เก็บ'; position: absolute; bottom: -24px; left: 0; right: 0; text-align: center; font-size: .75rem; color: var(--accent2); }
+    .die.held::after { content: attr(data-held); position: absolute; bottom: -24px; left: 0; right: 0; text-align: center; font-size: .75rem; color: var(--accent2); }
     .die.blank { opacity: .25; cursor: default; }
     .die.roll { animation: roll .45s; }
     @keyframes roll { 30% { transform: rotate(-25deg) scale(.9); } 70% { transform: rotate(20deg) scale(1.05); } }
@@ -36,7 +36,7 @@
   </style>
 </head>
 <body>
-  <header class="topbar"><a class="back" href="../../">← หน้าหลัก</a><h1>🎲 ยอดลูกเต๋า</h1></header>
+  <header class="topbar"><a class="back" href="../../" data-i18n="c.home">← หน้าหลัก</a><h1>🎲 <span data-i18n="g.dice">ยอดลูกเต๋า</span></h1></header>
   <main>
     <section id="lobby"></section>
     <section id="game" hidden><div id="table"></div></section>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>งูสี่ทิศ · Selva World</title>
+  <title data-i18n="g.snake" data-i18n-after=" · Selva World">Selva World</title>
   <link rel="stylesheet" href="../../css/style.css">
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
@@ -20,7 +20,7 @@
   </style>
 </head>
 <body>
-  <header class="topbar"><a class="back" href="../../">← หน้าหลัก</a><h1>🐍 งูสี่ทิศ</h1></header>
+  <header class="topbar"><a class="back" href="../../" data-i18n="c.home">← หน้าหลัก</a><h1>🐍 <span data-i18n="g.snake">งูสี่ทิศ</span></h1></header>
   <main>
     <section id="lobby"></section>
     <section id="game" hidden>
@@ -39,10 +39,10 @@
         </div>
         <aside class="side">
           <div class="banner" id="banner"></div>
-          <h3>ผู้เล่น (ความยาว · ชนะ)</h3>
+          <h3 data-i18n="sn.list"></h3>
           <ul class="players" id="list"></ul>
-          <button id="again" class="btn primary" hidden>เริ่มรอบใหม่</button>
-          <p class="muted">บังคับด้วยปุ่มลูกศร / WASD หรือปัดจอ</p>
+          <button id="again" class="btn primary" hidden data-i18n="sn.newRound"></button>
+          <p class="muted" data-i18n="sn.controls"></p>
         </aside>
       </div>
     </section>
