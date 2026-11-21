@@ -1,0 +1,78 @@
+/* Playing cards + card-table layout shared by the card games */
+.pcard {
+  --w: 64px;
+  width: var(--w); height: calc(var(--w) * 1.4); flex: none; position: relative;
+  background: #fdfcf7; color: #1d1b26; border-radius: calc(var(--w) * .12);
+  box-shadow: 0 2px 6px #0007; font-weight: 700; user-select: none; -webkit-user-select: none;
+  transition: transform .12s, box-shadow .12s;
+}
+.pcard.red { color: #d6223b; }
+.pcard .cr { position: absolute; top: 5%; left: 9%; font-size: calc(var(--w) * .3); line-height: 1; text-align: center; }
+.pcard .cr small { display: block; font-size: .8em; }
+.pcard .cs { position: absolute; inset: 0; display: grid; place-items: center; font-size: calc(var(--w) * .55); padding-top: 18%; }
+.pcard.back { background: repeating-linear-gradient(45deg, #6d28d9 0 6px, #7c3aed 6px 12px); border: 3px solid #fdfcf7; }
+.pcard.sm { --w: 38px; }
+.pcard.sm .cr { font-size: 13px; }
+.pcard.sm .cr small { display: none; }
+.pcard.sm .cs { font-size: 18px; }
+.pcard.lg { --w: 76px; }
+.pcard.clickable { cursor: pointer; }
+.pcard.clickable:hover { transform: translateY(-6px); }
+.pcard.sel { transform: translateY(-16px); box-shadow: 0 0 0 3px var(--accent2), 0 8px 16px #000a; }
+.pcard.dim { opacity: .35; }
+.pcard.win { box-shadow: 0 0 0 3px #ffd166, 0 0 18px #ffd16699; }
+
+.cards { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; min-height: 54px; }
+.cards.fan { gap: 0; padding-top: 18px; }
+.cards.fan .pcard + .pcard { margin-left: calc(var(--w) * -.42); }
+@media (max-width: 520px) {
+  .pcard { --w: 52px; }
+  .pcard.lg { --w: 62px; }
+  .pcard.sm { --w: 28px; }
+  .pcard.sm .cr { font-size: 11px; }
+  .pcard.sm .cs { font-size: 13px; }
+  .cards.fan .pcard + .pcard { margin-left: calc(var(--w) * -.6); }
+}
+
+/* table */
+.table { display: flex; flex-direction: column; gap: 14px; }
+.seats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.seat {
+  background: var(--bg2); border: 1px solid var(--line); border-top: 4px solid var(--pc);
+  border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; min-width: 0;
+}
+.seat.turn { box-shadow: 0 0 0 2px var(--pc), 0 0 20px color-mix(in srgb, var(--pc) 40%, transparent); }
+.seat.out { opacity: .5; }
+.seat .who { display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 0; }
+.seat .who .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.seat .meta { display: flex; justify-content: space-between; gap: 6px; color: var(--muted); font-size: .9rem; flex-wrap: wrap; }
+.seat .cards { justify-content: flex-start; min-height: 0; }
+.badge {
+  display: inline-block; font-size: .75rem; padding: 1px 8px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--line); color: var(--text); white-space: nowrap;
+}
+.badge.gold { background: #ffd166; color: #222; border-color: transparent; }
+.badge.good { background: #14532d; border-color: #22c55e; }
+.badge.bad { background: #4c0519; border-color: var(--bad); }
+
+.felt {
+  background: radial-gradient(ellipse at center, #17603f 0%, #0d3b28 100%);
+  border: 6px solid #3b2512; border-radius: 28px; padding: 18px 12px; min-height: 170px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center;
+}
+.felt .info { color: #d1fae5; font-size: 1.05rem; }
+.felt .pot { font-weight: 800; font-size: 1.3rem; color: #fde68a; }
+
+.mine { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.mine .label { color: var(--muted); }
+.mine.turn { border-color: var(--accent2); box-shadow: 0 0 0 2px var(--accent2); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
+.actions input[type=number] { width: 110px; }
+.log { color: var(--muted); font-size: .9rem; text-align: center; min-height: 1.3em; }
+
+@media (max-width: 520px) {
+  .seats { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
+  .seat { padding: 8px; gap: 4px; font-size: .9rem; }
+  .seat .cards { gap: 3px; }
+  .felt { padding: 14px 8px; min-height: 140px; }
+}

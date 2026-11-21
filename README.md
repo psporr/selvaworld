@@ -17,6 +17,12 @@ A portal of online web games for playing with up to 4 friends, hosted free on Gi
 | 🐍 Snake Arena (`games/snake`) | 1–4 | Real-time: grow longer, the last snake alive wins |
 | ⚡ Fast Finger (`games/reaction`) | 1–4 | Reaction: 5 rounds, tap when the screen turns green |
 | 🔲 Dots and Boxes (`games/dots`) | 2–4 | Turn-based: close a box to score a point |
+| 🃏 Pok Deng (`games/pokdeng`) | 2–4 | Cards: dealer rotates each round, Pok 8/9, 2–3 deng, tong, straight, sian |
+| 👑 Slave (`games/slave`) | 2–4 | Cards: Thai rules (3 lowest, 2 highest, ♣<♦<♥<♠), card exchange between King and Slave |
+| ♠️ Poker (`games/poker`) | 2–4 | Texas Hold'em, 1000 chips each, blinds 10/20, side pots |
+
+Card games use `js/cards.js` + `css/cards.css`. Each player's hidden cards are sent privately
+with `room.sendTo(id, data)`, so other players' browsers never receive cards they can't see.
 
 ## Publishing to GitHub Pages
 
@@ -64,6 +70,7 @@ function onStart(room) {
 - `room.players`: `[{ id, name, color, host? }]`; `room.myId`; `room.isHost`; `room.code`
 - `room.toHost(data)`: send input to the host
 - `room.broadcast(data)`: host only, sends to everyone including the host
+- `room.sendTo(id, data)`: host only, sends privately to one player (e.g. their hand)
 - Events: `players`, `message`, `input` (host), `join`/`leave` (host), `disconnected` (players)
 
 ## Limitations

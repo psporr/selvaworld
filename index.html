@@ -29,6 +29,12 @@
   <script>
     // เพิ่มเกมใหม่: เพิ่ม object ในลิสต์นี้ และสร้างโฟลเดอร์ games/<id>/
     const GAMES = [
+      { id: 'pokdeng',  name: 'ป็อกเด้ง',      icon: '🃏', bg: 'linear-gradient(135deg,#7f1d1d,#be123c)',
+        desc: 'ผลัดกันเป็นเจ้ามือ ป็อก 8 ป็อก 9 สองเด้ง สามเด้ง ตอง เรียง เซียน ครบ', players: '2–4 คน', tags: ['ไพ่', 'ปาร์ตี้'] },
+      { id: 'slave',    name: 'สลาฟ',          icon: '👑', bg: 'linear-gradient(135deg,#713f12,#ca8a04)',
+        desc: 'ลงไพ่ให้หมดก่อนเป็นคิง คนสุดท้ายเป็นสลาฟ ต้องแลกไพ่ดีให้คิงรอบหน้า', players: '2–4 คน', tags: ['ไพ่', 'กติกาไทย'] },
+      { id: 'poker',    name: 'โป๊กเกอร์',      icon: '♠️', bg: 'linear-gradient(135deg,#064e3b,#047857)',
+        desc: 'Texas Hold\'em เริ่มคนละ 1000 ชิป บลายด์ 10/20 เล่นจนเหลือผู้ชนะคนเดียว', players: '2–4 คน', tags: ['ไพ่', 'วางแผน'] },
       { id: 'snake',    name: 'งูสี่ทิศ',      icon: '🐍', bg: 'linear-gradient(135deg,#14532d,#0f766e)',
         desc: 'เก็บผลไม้ให้ตัวยาว หลบงูของเพื่อน คนสุดท้ายที่รอดชนะ', players: '1–4 คน', tags: ['เรียลไทม์', 'แอ็กชัน'] },
       { id: 'reaction', name: 'นิ้วไว',         icon: '⚡', bg: 'linear-gradient(135deg,#7c2d12,#b45309)',

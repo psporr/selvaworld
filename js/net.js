@@ -195,6 +195,14 @@ export class Room extends Emitter {
     queueMicrotask(() => this.emit('message', data));
   }
 
+  /** Host only: send a private message to one player (e.g. their own cards). */
+  sendTo(id, data) {
+    if (!this.isHost) return;
+    if (id === this.myId) { queueMicrotask(() => this.emit('message', data)); return; }
+    const c = this.conns.get(id);
+    if (c?.open) c.send({ t: 'msg', d: data });
+  }
+
   leave() {
     clearInterval(this._ping);
     clearInterval(this._watch);
