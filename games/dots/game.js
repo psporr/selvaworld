@@ -1,10 +1,11 @@
 import { createLobby, playerItems } from '../../js/lobby.js';
 import { COLORS, escapeHtml } from '../../js/net.js';
+import { botRunner } from '../../js/bots.js';
 
 const S = 64; // spacing between dots (svg units)
 const M = 20; // margin
 
-createLobby({ title: '🔲 จุดต่อกล่อง', minPlayers: 2, maxPlayers: 4, onStart });
+createLobby({ title: '🔲 จุดต่อกล่อง', minPlayers: 2, maxPlayers: 6, bots: true, onStart });
 
 // Indexing for an n×n grid of dots:
 //  h[r*(n-1)+c]  horizontal line (r,c)→(r,c+1), r∈[0,n-1], c∈[0,n-2]
@@ -18,7 +19,7 @@ function onStart(room) {
   const again = document.getElementById('again');
   let st = null;
 
-  room.on('message', (m) => { if (m.type === 'state') { st = m; render(); } });
+  room.on('message', (m) => { if (m.type === 'state') { st = m; window.__st = m; render(); } });
 
   svg.addEventListener('click', (e) => {
     const hit = e.target.closest('.hit.free');
@@ -91,7 +92,7 @@ function hostLogic(room, again) {
 
   function newGame() {
     const players = room.players.map(({ id, name, color }) => ({ id, name, color }));
-    const n = players.length <= 2 ? 5 : 6;
+    const n = players.length <= 2 ? 5 : players.length <= 4 ? 6 : 7;
     st = {
       type: 'state', n,
       h: Array(n * (n - 1)).fill(null),
@@ -104,7 +105,7 @@ function hostLogic(room, again) {
       over: false,
       last: null,
     };
-    room.broadcast(st);
+    send();
   }
 
   const boxClosed = (r, c) => {
@@ -117,7 +118,7 @@ function hostLogic(room, again) {
     st.turn = st.order[(i + 1) % st.order.length];
   };
 
-  room.on('input', (d, from) => {
+  function handle(d, from) {
     if (!st || st.over || d?.type !== 'line' || from !== st.turn) return;
     const { n } = st;
     const { kind, r, c } = d;
@@ -140,8 +141,30 @@ function hostLogic(room, again) {
     if (!scored) advance();
     st.last = { kind, r, c };
     if (st.boxes.every(Boolean)) st.over = true;
-    room.broadcast(st);
-  });
+    send();
+  }
+  room.on('input', handle);
+
+  // bot: close a box if possible, otherwise avoid giving one away (drawing a box's 3rd side)
+  const sides = (r, c) => {
+    const { n } = st;
+    return [st.h[r * (n - 1) + c], st.h[(r + 1) * (n - 1) + c], st.v[r * n + c], st.v[r * n + c + 1]].filter(Boolean).length;
+  };
+  function decide(id) {
+    if (!st || st.over || st.turn !== id) return null;
+    const { n } = st;
+    const moves = [];
+    for (let r = 0; r < n; r++) for (let c = 0; c < n - 1; c++) if (!st.h[r * (n - 1) + c]) moves.push({ kind: 'h', r, c, adj: [[r - 1, c], [r, c]] });
+    for (let r = 0; r < n - 1; r++) for (let c = 0; c < n; c++) if (!st.v[r * n + c]) moves.push({ kind: 'v', r, c, adj: [[r, c - 1], [r, c]] });
+    const valid = (r, c) => r >= 0 && c >= 0 && r < n - 1 && c < n - 1;
+    const scoring = moves.filter((m) => m.adj.some(([r, c]) => valid(r, c) && sides(r, c) === 3));
+    const safe = moves.filter((m) => m.adj.every(([r, c]) => !valid(r, c) || sides(r, c) < 2));
+    const pool = scoring.length ? scoring : safe.length ? safe : moves;
+    const m = pool[Math.floor(Math.random() * pool.length)];
+    return m && { type: 'line', kind: m.kind, r: m.r, c: m.c };
+  }
+  const kick = botRunner(room, decide, handle, 650);
+  const send = () => { room.broadcast(st); kick(); };
 
   room.on('leave', (id) => {
     if (!st) return;
@@ -150,7 +173,7 @@ function hostLogic(room, again) {
     st.order.splice(i, 1);
     if (!st.order.length) st.over = true;
     else if (st.turn === id) st.turn = st.order[i % st.order.length];
-    room.broadcast(st);
+    send();
   });
 
   again.onclick = newGame;

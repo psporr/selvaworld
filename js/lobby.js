@@ -7,7 +7,7 @@ const NAME_KEY = 'selvaworld:name';
 function loadName() { try { return localStorage.getItem(NAME_KEY) || ''; } catch { return ''; } }
 function saveName(n) { try { localStorage.setItem(NAME_KEY, n); } catch { /* ignore */ } }
 
-export function createLobby({ title, minPlayers = 1, maxPlayers = 4, onStart }) {
+export function createLobby({ title, minPlayers = 1, maxPlayers = 6, bots = false, onStart }) {
   const root = document.getElementById('lobby');
   const gameEl = document.getElementById('game');
   const inviteCode = (new URLSearchParams(location.search).get('room') || '').toUpperCase();
@@ -21,7 +21,7 @@ export function createLobby({ title, minPlayers = 1, maxPlayers = 4, onStart }) 
     root.innerHTML = `
       <div class="card lobby">
         <h2>${escapeHtml(title)}</h2>
-        <p class="muted">เล่นได้ ${range} คน</p>
+        <p class="muted">เล่นได้ ${range} คน${bots ? ' · เล่นคนเดียวได้ เพิ่มบอทเป็นคู่แข่ง' : ''}</p>
         <label class="field"><span>ชื่อของคุณ</span>
           <input id="lb-name" maxlength="16" placeholder="เช่น ต้นกล้า" value="${escapeHtml(loadName())}">
         </label>
@@ -110,13 +110,18 @@ export function createLobby({ title, minPlayers = 1, maxPlayers = 4, onStart }) 
   function renderPlayers() {
     const list = root.querySelector('#lb-players');
     if (!list) return;
-    list.innerHTML = playerItems(room.players, room.myId);
+    list.innerHTML = playerItems(room.players, room.myId, (p) =>
+      (room.isHost && p.bot ? `<button class="btn ghost rm" data-rm="${p.id}" title="เอาบอทออก">✕</button>` : ''));
+    list.onclick = (e) => { const b = e.target.closest('[data-rm]'); if (b) room.removeBot(b.dataset.rm); };
     root.querySelector('#lb-count').textContent = `(${room.players.length}/${maxPlayers})`;
     const area = root.querySelector('#lb-host-area');
     if (room.isHost) {
       const enough = room.players.length >= minPlayers;
-      area.innerHTML = `<button id="lb-start" class="btn primary big" ${enough ? '' : 'disabled'}>เริ่มเกม</button>
-        ${enough ? '' : `<p class="muted">ต้องมีอย่างน้อย ${minPlayers} คน</p>`}`;
+      const canAddBot = bots && room.players.length < maxPlayers;
+      area.innerHTML = `${canAddBot ? '<button id="lb-bot" class="btn" style="width:100%">🤖 เพิ่มบอท</button>' : ''}
+        <button id="lb-start" class="btn primary big" ${enough ? '' : 'disabled'} style="margin-top:10px">เริ่มเกม</button>
+        ${enough ? '' : `<p class="muted">ต้องมีอย่างน้อย ${minPlayers} คน${bots ? ' (นับบอทด้วย)' : ''}</p>`}`;
+      area.querySelector('#lb-bot')?.addEventListener('click', () => room.addBot());
       area.querySelector('#lb-start').onclick = () => {
         room.locked = true;
         room.broadcast({ type: '__start' });
@@ -131,7 +136,7 @@ export function playerItems(players, myId, extra = () => '') {
   return players.map((p) => `
     <li style="--pc:${COLORS[p.color % COLORS.length]}">
       <span class="dot"></span>
-      <span class="pname">${escapeHtml(p.name)}${p.id === myId ? ' <em>(คุณ)</em>' : ''}${p.host ? ' 👑' : ''}</span>
+      <span class="pname">${p.bot ? '🤖 ' : ''}${escapeHtml(p.name)}${p.id === myId ? ' <em>(คุณ)</em>' : ''}${p.host ? ' 👑' : ''}</span>
       ${extra(p)}
     </li>`).join('');
 }

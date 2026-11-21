@@ -1,9 +1,10 @@
 import { createLobby } from '../../js/lobby.js';
 import { COLORS, escapeHtml } from '../../js/net.js';
-import { newDeck, cardsHTML, cardLabel, backHTML } from '../../js/cards.js';
+import { newDeck, cardsHTML, cardLabel, backHTML, rankOf } from '../../js/cards.js';
+import { botRunner } from '../../js/bots.js';
 import { power, sortHand, canBeat, titlesFor, THREE_CLUBS } from './rules.js';
 
-createLobby({ title: '👑 สลาฟ', minPlayers: 2, maxPlayers: 4, onStart });
+createLobby({ title: '👑 สลาฟ', minPlayers: 2, maxPlayers: 6, bots: true, onStart });
 
 function onStart(room) {
   const el = document.getElementById('table');
@@ -184,7 +185,7 @@ function hostLogic(room) {
     push();
   }
 
-  room.on('input', (d, from) => {
+  function handle(d, from) {
     if (S.phase !== 'play') return;
     const p = P()[S.turn];
     if (!p || p.id !== from) return;
@@ -210,7 +211,29 @@ function hostLogic(room) {
       }
       advance();
     }
-  });
+  }
+  room.on('input', handle);
+
+  // bot: play the lowest cards that work; lead with the lowest whole rank group
+  function decide(id) {
+    const p = P()[S.turn];
+    if (S.phase !== 'play' || !p || p.id !== id) return null;
+    const groups = [];
+    for (const c of p.hand) { // hand is sorted low → high
+      const g = groups[groups.length - 1];
+      if (g && rankOf(g[0]) === rankOf(c)) g.push(c); else groups.push([c]);
+    }
+    if (S.mustThree) return { type: 'play', cards: groups.find((g) => g.includes(THREE_CLUBS)) };
+    if (!S.lead) return { type: 'play', cards: groups[0] };
+    const L = S.lead.cards.length;
+    for (const g of groups) {
+      if (g.length < L) continue;
+      const pick = g.slice(-L);
+      if (canBeat(pick, S.lead.cards)) return { type: 'play', cards: pick };
+    }
+    return { type: 'pass' };
+  }
+  const kick = botRunner(room, decide, handle);
 
   room.on('leave', (id) => {
     const p = P().find((x) => x.id === id);
@@ -237,7 +260,7 @@ function hostLogic(room) {
     };
   }
 
-  function push() { for (const p of P()) if (!p.left) room.sendTo(p.id, view(p.id)); }
+  function push() { for (const p of P()) if (!p.left) room.sendTo(p.id, view(p.id)); kick(); }
 
   newRound();
   return newRound;

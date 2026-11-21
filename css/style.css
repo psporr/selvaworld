@@ -127,6 +127,7 @@ main { max-width: 1040px; margin: 0 auto; padding: 0 16px 48px; }
 .players em { color: var(--muted); font-style: normal; font-size: .85rem; }
 .players .score { font-weight: 800; font-size: 1.2rem; }
 .players li.turn { outline: 2px solid var(--pc); }
+.players .rm { padding: 2px 10px; }
 
 /* ---------- game layout ---------- */
 .game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 20px; align-items: start; margin-top: 8px; }

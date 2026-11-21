@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Selva World</title>
-  <meta name="description" content="Selva World: เกมออนไลน์เล่นกับเพื่อนได้ 4 คนบนเว็บ">
+  <meta name="description" content="Selva World: เกมออนไลน์เล่นกับเพื่อนได้ 1–6 คนบนเว็บ">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header class="hero">
     <h1 class="logo">Selva World</h1>
-    <p>เกมออนไลน์สั้นๆ เล่นกับเพื่อนได้สูงสุด 4 คน ไม่ต้องสมัคร ไม่ต้องลงแอป</p>
+    <p>เกมออนไลน์สั้นๆ เล่นกับเพื่อนได้สูงสุด 6 คน (หรือเล่นกับบอท) ไม่ต้องสมัคร ไม่ต้องลงแอป</p>
     <ol class="steps">
       <li><b>1.</b> เลือกเกม</li>
       <li><b>2.</b> สร้างห้อง</li>
@@ -30,17 +30,17 @@
     // เพิ่มเกมใหม่: เพิ่ม object ในลิสต์นี้ และสร้างโฟลเดอร์ games/<id>/
     const GAMES = [
       { id: 'pokdeng',  name: 'ป็อกเด้ง',      icon: '🃏', bg: 'linear-gradient(135deg,#7f1d1d,#be123c)',
-        desc: 'ผลัดกันเป็นเจ้ามือ ป็อก 8 ป็อก 9 สองเด้ง สามเด้ง ตอง เรียง เซียน ครบ', players: '2–4 คน', tags: ['ไพ่', 'ปาร์ตี้'] },
+        desc: 'ผลัดกันเป็นเจ้ามือ ป็อก 8 ป็อก 9 สองเด้ง สามเด้ง ตอง เรียง เซียน ครบ', players: '1–6 คน · มีบอท', tags: ['ไพ่', 'ปาร์ตี้'] },
       { id: 'slave',    name: 'สลาฟ',          icon: '👑', bg: 'linear-gradient(135deg,#713f12,#ca8a04)',
-        desc: 'ลงไพ่ให้หมดก่อนเป็นคิง คนสุดท้ายเป็นสลาฟ ต้องแลกไพ่ดีให้คิงรอบหน้า', players: '2–4 คน', tags: ['ไพ่', 'กติกาไทย'] },
+        desc: 'ลงไพ่ให้หมดก่อนเป็นคิง คนสุดท้ายเป็นสลาฟ ต้องแลกไพ่ดีให้คิงรอบหน้า', players: '1–6 คน · มีบอท', tags: ['ไพ่', 'กติกาไทย'] },
       { id: 'poker',    name: 'โป๊กเกอร์',      icon: '♠️', bg: 'linear-gradient(135deg,#064e3b,#047857)',
-        desc: 'Texas Hold\'em เริ่มคนละ 1000 ชิป บลายด์ 10/20 เล่นจนเหลือผู้ชนะคนเดียว', players: '2–4 คน', tags: ['ไพ่', 'วางแผน'] },
+        desc: 'Texas Hold\'em เริ่มคนละ 1000 ชิป บลายด์ 10/20 เล่นจนเหลือผู้ชนะคนเดียว', players: '1–6 คน · มีบอท', tags: ['ไพ่', 'วางแผน'] },
       { id: 'snake',    name: 'งูสี่ทิศ',      icon: '🐍', bg: 'linear-gradient(135deg,#14532d,#0f766e)',
-        desc: 'เก็บผลไม้ให้ตัวยาว หลบงูของเพื่อน คนสุดท้ายที่รอดชนะ', players: '1–4 คน', tags: ['เรียลไทม์', 'แอ็กชัน'] },
+        desc: 'เก็บผลไม้ให้ตัวยาว หลบงูของเพื่อน คนสุดท้ายที่รอดชนะ', players: '1–6 คน', tags: ['เรียลไทม์', 'แอ็กชัน'] },
       { id: 'reaction', name: 'นิ้วไว',         icon: '⚡', bg: 'linear-gradient(135deg,#7c2d12,#b45309)',
-        desc: 'จอเปลี่ยนเป็นสีเขียวเมื่อไหร่ แตะให้ไวที่สุด แตะก่อนโดนหักคะแนน', players: '1–4 คน', tags: ['ปาร์ตี้', '5 รอบ'] },
+        desc: 'จอเปลี่ยนเป็นสีเขียวเมื่อไหร่ แตะให้ไวที่สุด แตะก่อนโดนหักคะแนน', players: '1–6 คน', tags: ['ปาร์ตี้', '5 รอบ'] },
       { id: 'dots',     name: 'จุดต่อกล่อง',   icon: '🔲', bg: 'linear-gradient(135deg,#312e81,#6d28d9)',
-        desc: 'ผลัดกันลากเส้น ปิดกล่องได้ก็ได้แต้มและได้เล่นต่อ', players: '2–4 คน', tags: ['ผลัดกันเล่น', 'วางแผน'] },
+        desc: 'ผลัดกันลากเส้น ปิดกล่องได้ก็ได้แต้มและได้เล่นต่อ', players: '1–6 คน · มีบอท', tags: ['ผลัดกันเล่น', 'วางแผน'] },
     ];
     const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     document.getElementById('games').innerHTML = GAMES.map((g) => `

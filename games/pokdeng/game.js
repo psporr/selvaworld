@@ -2,10 +2,11 @@ import { createLobby } from '../../js/lobby.js';
 import { COLORS, escapeHtml } from '../../js/net.js';
 import { newDeck, cardsHTML, backHTML } from '../../js/cards.js';
 import { evaluate, settle } from './rules.js';
+import { botRunner } from '../../js/bots.js';
 
 const BETS = [10, 20, 50, 100];
 
-createLobby({ title: '🃏 ป็อกเด้ง', minPlayers: 2, maxPlayers: 4, onStart });
+createLobby({ title: '🃏 ป็อกเด้ง', minPlayers: 2, maxPlayers: 6, bots: true, onStart });
 
 const money = (n) => (n > 0 ? `+${n}` : `${n}`);
 const deltaBadge = (d) => (d == null ? '' : `<span class="badge ${d > 0 ? 'good' : d < 0 ? 'bad' : ''}">${d === 0 ? 'เสมอ' : money(d)}</span>`);
@@ -148,7 +149,7 @@ function hostLogic(room) {
     push();
   }
 
-  room.on('input', (d, from) => {
+  function handle(d, from) {
     const p = active().find((x) => x.id === from);
     if (!p) return;
     const isDealer = p === dealer();
@@ -163,7 +164,21 @@ function hostLogic(room) {
       if (d.type === 'draw') { p.cards.push(S.deck.pop()); S.log = 'เจ้ามือจั่วไพ่ใบที่ 3'; } else S.log = 'เจ้ามือไม่จั่ว';
       showdown();
     }
-  });
+  }
+  room.on('input', handle);
+
+  // bot: random bet, draw a third card on 4 points or fewer
+  function decide(id) {
+    const p = active().find((x) => x.id === id);
+    if (!p) return null;
+    const isDealer = p === dealer();
+    const drawOrStay = () => ({ type: evaluate(p.cards).pts <= 4 ? 'draw' : 'stay' });
+    if (S.phase === 'bet' && !isDealer && !p.bet) return { type: 'bet', amount: BETS[Math.floor(Math.random() * BETS.length)] };
+    if (S.phase === 'draw' && !isDealer && !p.decided) return drawOrStay();
+    if (S.phase === 'dealer' && isDealer) return drawOrStay();
+    return null;
+  }
+  const kick = botRunner(room, decide, handle);
 
   room.on('leave', (id) => {
     const p = S.players.find((x) => x.id === id);
@@ -196,7 +211,7 @@ function hostLogic(room) {
     };
   }
 
-  function push() { for (const p of active()) room.sendTo(p.id, view(p.id)); }
+  function push() { for (const p of active()) room.sendTo(p.id, view(p.id)); kick(); }
 
   newRound();
   return newRound;

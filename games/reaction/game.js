@@ -5,7 +5,7 @@ const ROUNDS = 5;
 const POINTS = [3, 2, 1, 0];
 const LIMIT_MS = 3000;
 
-createLobby({ title: '⚡ นิ้วไว', minPlayers: 1, maxPlayers: 4, onStart });
+createLobby({ title: '⚡ นิ้วไว', minPlayers: 1, maxPlayers: 6, onStart });
 
 function onStart(room) {
   const pad = document.getElementById('pad');

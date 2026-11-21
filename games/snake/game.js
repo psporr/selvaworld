@@ -1,8 +1,8 @@
 import { createLobby, playerItems } from '../../js/lobby.js';
 import { COLORS, escapeHtml } from '../../js/net.js';
 
-const W = 28;
-const H = 28;
+const W = 32;
+const H = 32;
 const TICK = 115;
 const FOOD = 4;
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
@@ -12,9 +12,11 @@ const STARTS = [
   { x: W - 6, y: H - 6, d: 'left' },
   { x: W - 6, y: 5, d: 'down' },
   { x: 5, y: H - 6, d: 'up' },
+  { x: W / 2, y: 3, d: 'down' },
+  { x: W / 2 - 1, y: H - 4, d: 'up' },
 ];
 
-createLobby({ title: '🐍 งูสี่ทิศ', minPlayers: 1, maxPlayers: 4, onStart });
+createLobby({ title: '🐍 งูสี่ทิศ', minPlayers: 1, maxPlayers: 6, onStart });
 
 function onStart(room) {
   const canvas = document.getElementById('board');

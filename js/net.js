@@ -6,13 +6,15 @@
 const PREFIX = 'selvaworld-v1-';
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
-export const COLORS = ['#ff5c7a', '#4cc9f0', '#ffd166', '#7bd389'];
+export const COLORS = ['#ff5c7a', '#4cc9f0', '#ffd166', '#7bd389', '#c084fc', '#fb923c'];
 
 export function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, (ch) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   }[ch]));
 }
+
+const BOT_NAMES = ['บอทน้องหมี', 'บอทพี่ช้าง', 'บอทลุงเสือ', 'บอทป้าแมว', 'บอทน้าลิง'];
 
 function makeCode(len = 5) {
   const buf = crypto.getRandomValues(new Uint32Array(len));
@@ -41,13 +43,13 @@ export class Room extends Emitter {
     this.conns = new Map(); // host: peerId -> DataConnection
     this.isHost = false;
     this.locked = false;    // host: refuse new joins (game in progress)
-    this.maxPlayers = 4;
+    this.maxPlayers = 6;
   }
 
   get me() { return this.players.find((p) => p.id === this.myId); }
   player(id) { return this.players.find((p) => p.id === id); }
 
-  static async host(name, maxPlayers = 4) {
+  static async host(name, maxPlayers = 6) {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         return await Room._tryHost(name, maxPlayers, makeCode());
@@ -91,9 +93,7 @@ export class Room extends Emitter {
       if (msg.t === 'hello') {
         if (this.locked) return this._refuse(conn, 'เกมเริ่มไปแล้ว รอรอบหน้านะ');
         if (this.players.length >= this.maxPlayers) return this._refuse(conn, 'ห้องเต็มแล้ว');
-        const used = new Set(this.players.map((p) => p.color));
-        let color = 0;
-        while (used.has(color)) color++;
+        const color = this._freeColor();
         const name = String(msg.name || 'ผู้เล่น').slice(0, 16);
         this.conns.set(conn.peer, conn);
         this.players.push({ id: conn.peer, name, color });
@@ -106,6 +106,28 @@ export class Room extends Emitter {
     });
     conn.on('close', () => this._drop(conn.peer));
     conn.on('error', () => this._drop(conn.peer));
+  }
+
+  _freeColor() {
+    const used = new Set(this.players.map((p) => p.color));
+    let color = 0;
+    while (used.has(color)) color++;
+    return color;
+  }
+
+  /** Host only: add a computer player. The game's host logic plays for it. */
+  addBot() {
+    if (!this.isHost || this.locked || this.players.length >= this.maxPlayers) return;
+    const taken = new Set(this.players.map((p) => p.name));
+    const name = BOT_NAMES.find((n) => !taken.has(n)) || `บอท ${this.players.length}`;
+    this.players.push({ id: `bot-${makeCode(6)}`, name, color: this._freeColor(), bot: true });
+    this._syncPlayers();
+  }
+
+  removeBot(id) {
+    if (!this.isHost || this.locked) return;
+    this.players = this.players.filter((p) => !(p.bot && p.id === id));
+    this._syncPlayers();
   }
 
   _refuse(conn, reason) {

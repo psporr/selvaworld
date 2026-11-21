@@ -1,6 +1,7 @@
 import { createLobby } from '../../js/lobby.js';
 import { COLORS, escapeHtml } from '../../js/net.js';
-import { newDeck, cardsHTML, backHTML } from '../../js/cards.js';
+import { newDeck, cardsHTML, backHTML, rankOf, suitOf } from '../../js/cards.js';
+import { botRunner } from '../../js/bots.js';
 import { best, describe, splitPots } from './rules.js';
 
 const START_CHIPS = 1000;
@@ -8,7 +9,7 @@ const SB = 10;
 const BB = 20;
 const STREET_NAME = { preflop: 'พรีฟล็อป', flop: 'ฟล็อป', turn: 'เทิร์น', river: 'ริเวอร์', showdown: 'โชว์ดาวน์' };
 
-createLobby({ title: '♠️ โป๊กเกอร์', minPlayers: 2, maxPlayers: 4, onStart });
+createLobby({ title: '♠️ โป๊กเกอร์', minPlayers: 2, maxPlayers: 6, bots: true, onStart });
 
 function onStart(room) {
   const el = document.getElementById('table');
@@ -221,7 +222,7 @@ function hostLogic(room) {
     push();
   }
 
-  room.on('input', (d, from) => {
+  function handle(d, from) {
     if (S.phase !== 'play' || S.toAct < 0) return;
     const p = P[S.toAct];
     if (p.id !== from) return;
@@ -252,7 +253,40 @@ function hostLogic(room) {
     }
     S.need.delete(p.id);
     proceed();
-  });
+  }
+  room.on('input', handle);
+
+  // bot: rough hand strength 0–3, then raise / call / check / fold
+  function strength(p) {
+    if (!S.board.length) {
+      const [a, b] = p.hole.map(rankOf).sort((x, y) => y - x);
+      if (a === b) return a >= 10 ? 3 : 2;
+      if (b >= 11) return 2;
+      if (a >= 12 || (suitOf(p.hole[0]) === suitOf(p.hole[1]) && a - b === 1)) return 1;
+      return 0;
+    }
+    const cat = best([...p.hole, ...S.board]).score[0];
+    return cat >= 3 ? 3 : cat;
+  }
+  function decide(id) {
+    if (S.phase !== 'play' || S.toAct < 0) return null;
+    const p = P[S.toAct];
+    if (p.id !== id) return null;
+    const s = strength(p);
+    const toCall = S.currentBet - p.bet;
+    const maxTo = p.bet + p.chips;
+    const r = Math.random();
+    const raiseTo = (extra) => {
+      const to = Math.min(maxTo, Math.max(S.currentBet + S.minRaise, S.currentBet + Math.round(extra / 10) * 10));
+      return to > S.currentBet ? { type: 'raise', to } : { type: toCall > 0 ? 'call' : 'check' };
+    };
+    if (s === 3 && r < 0.6) return raiseTo(pot() / 2 + toCall);
+    if (toCall <= 0) return s >= 2 && r < 0.4 ? raiseTo(pot() / 2) : { type: 'check' };
+    const price = toCall / (pot() + toCall);
+    if (s >= 2 || (s === 1 && price < 0.35) || (toCall <= BB && r < 0.7)) return { type: 'call' };
+    return { type: 'fold' };
+  }
+  const kick = botRunner(room, decide, handle, 900);
 
   room.on('leave', (id) => {
     const p = P.find((x) => x.id === id);
@@ -286,7 +320,7 @@ function hostLogic(room) {
     };
   }
 
-  function push() { for (const p of P) if (!p.left) room.sendTo(p.id, view(p.id)); }
+  function push() { for (const p of P) if (!p.left) room.sendTo(p.id, view(p.id)); kick(); }
 
   startHand();
   return startHand;

@@ -1,6 +1,6 @@
 # Selva World 🎮
 
-A portal of online web games for playing with up to 4 friends, hosted free on GitHub Pages with no server.
+A portal of online web games for playing with up to 6 players (bots can fill seats), hosted free on GitHub Pages with no server.
 
 ## How it works
 
@@ -14,15 +14,19 @@ A portal of online web games for playing with up to 4 friends, hosted free on Gi
 
 | Game | Players | Type |
 |---|---|---|
-| 🐍 Snake Arena (`games/snake`) | 1–4 | Real-time: grow longer, the last snake alive wins |
-| ⚡ Fast Finger (`games/reaction`) | 1–4 | Reaction: 5 rounds, tap when the screen turns green |
-| 🔲 Dots and Boxes (`games/dots`) | 2–4 | Turn-based: close a box to score a point |
-| 🃏 Pok Deng (`games/pokdeng`) | 2–4 | Cards: dealer rotates each round, Pok 8/9, 2–3 deng, tong, straight, sian |
-| 👑 Slave (`games/slave`) | 2–4 | Cards: Thai rules (3 lowest, 2 highest, ♣<♦<♥<♠), card exchange between King and Slave |
-| ♠️ Poker (`games/poker`) | 2–4 | Texas Hold'em, 1000 chips each, blinds 10/20, side pots |
+| 🐍 Snake Arena (`games/snake`) | 1–6 | Real-time: grow longer, the last snake alive wins |
+| ⚡ Fast Finger (`games/reaction`) | 1–6 | Reaction: 5 rounds, tap when the screen turns green |
+| 🔲 Dots and Boxes (`games/dots`) | 1–6 | Turn-based: close a box to score a point |
+| 🃏 Pok Deng (`games/pokdeng`) | 1–6 | Cards: dealer rotates each round, Pok 8/9, 2–3 deng, tong, straight, sian |
+| 👑 Slave (`games/slave`) | 1–6 | Cards: Thai rules (3 lowest, 2 highest, ♣<♦<♥<♠), card exchange between King and Slave |
+| ♠️ Poker (`games/poker`) | 1–6 | Texas Hold'em, 1000 chips each, blinds 10/20, side pots |
 
 Card games use `js/cards.js` + `css/cards.css`. Each player's hidden cards are sent privately
 with `room.sendTo(id, data)`, so other players' browsers never receive cards they can't see.
+
+Every game supports 1–6 players. Pok Deng, Slave, Poker and Dots and Boxes need at least 2 seats:
+the host can press **🤖 Add bot** in the lobby (bots run on the host's browser via `js/bots.js`).
+To give a new game bots, pass `bots: true` to `createLobby` and drive them with `botRunner(room, decide, handle)`.
 
 ## Publishing to GitHub Pages
 
@@ -70,6 +74,7 @@ function onStart(room) {
 - `room.players`: `[{ id, name, color, host? }]`; `room.myId`; `room.isHost`; `room.code`
 - `room.toHost(data)`: send input to the host
 - `room.broadcast(data)`: host only, sends to everyone including the host
+- `room.addBot()` / `room.removeBot(id)`: host only, in the lobby; bots appear in `room.players` with `bot: true`
 - `room.sendTo(id, data)`: host only, sends privately to one player (e.g. their hand)
 - Events: `players`, `message`, `input` (host), `join`/`leave` (host), `disconnected` (players)
 
